@@ -1,0 +1,55 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="努力，奋斗！"><title>Redis消息多播+PublisherSubscriber | 其斤.匕禾页</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/8.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Redis消息多播+PublisherSubscriber</h1><a id="logo" href="/.">其斤.匕禾页</a><p class="description">永远相信美好的事情即将发生</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="https://www.xhzyxed.cn/"><i class="fa fa-user"> 关于</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Redis消息多播+PublisherSubscriber</h1><div class="post-meta">Aug 20, 2018<span> | </span><span class="category"><a href="/categories/Redis/">Redis</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#PubSub"><span class="toc-number">1.</span> <span class="toc-text">PubSub</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#消费者"><span class="toc-number">1.1.</span> <span class="toc-text">消费者</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#使用listen，更及时获取消息"><span class="toc-number">1.1.1.</span> <span class="toc-text">使用listen，更及时获取消息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#消息结构"><span class="toc-number">1.1.2.</span> <span class="toc-text">消息结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#模式订阅"><span class="toc-number">1.1.3.</span> <span class="toc-text">模式订阅</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#生产者"><span class="toc-number">1.2.</span> <span class="toc-text">生产者</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PubSub缺点"><span class="toc-number">1.3.</span> <span class="toc-text">PubSub缺点</span></a></li></ol></li></ol></div></div><div class="post-content"><p>几乎没有合适应应用场景的PubSub,了解一下吧</p>
+<a id="more"></a>
+<h1 id="PubSub"><a href="#PubSub" class="headerlink" title="PubSub"></a>PubSub</h1><p>这个模块的名字叫做 PubSub，也就是 PublisherSubscriber，发布者订阅者模型,也就是我们经常碰见的场景，加入群聊之后，就可以收到群聊里面的消息了，消息多播允许生产者生产一次消息，中间件负责将消息复制到多个消息队列，每个消息队列由相应的消费组进行消费。它是分布式系统常用的一种解耦方式，用于将多个消费组的逻辑进行拆分。支持了消息多播，多个消费组的逻辑就可以放到不同的子系统中。</p>
+<h2 id="消费者"><a href="#消费者" class="headerlink" title="消费者"></a>消费者</h2><pre><code class="bash"><span class="comment"># -*- coding: utf-8 -*-</span>
+import time
+import redis
+
+client = redis.StrictRedis()
+p = client.pubsub()
+p.subscribe(<span class="string">"sevenshi"</span>)
+<span class="keyword">while</span> True:
+    msg = p.get_message()
+    <span class="keyword">if</span> not msg:
+        time.sleep(1)
+        <span class="built_in">continue</span>
+    <span class="built_in">print</span> msg
+</code></pre>
+<h3 id="使用listen，更及时获取消息"><a href="#使用listen，更及时获取消息" class="headerlink" title="使用listen，更及时获取消息"></a>使用listen，更及时获取消息</h3><pre><code class="bash">
+<span class="comment"># -*- coding: utf-8 -*-</span>
+import time
+import redis
+
+client = redis.StrictRedis()
+p = client.pubsub()
+p.subscribe(<span class="string">"sevenshi"</span>)
+<span class="keyword">for</span> msg <span class="keyword">in</span> p.listen():
+    <span class="built_in">print</span> msg
+</code></pre>
+<h3 id="消息结构"><a href="#消息结构" class="headerlink" title="消息结构"></a>消息结构</h3><pre><code>{&apos;pattern&apos;: None, &apos;type&apos;: &apos;subscribe&apos;, &apos;channel&apos;: &apos;codehole&apos;, &apos;data&apos;: 1L}
+</code></pre><ul>
+<li><p>data 消息的内容，一个字符串。</p>
+</li>
+<li><p>channel 表示当前订阅的主题名称。</p>
+</li>
+<li><p>type 它表示消息的类型，普通的消息，类型就是 message，控制消息，比如订阅指令的反馈，类型就是 subscribe，模式订阅的反馈，它的类型就是 psubscribe，还有取消订阅指令的反馈 unsubscribe 和 punsubscribe。…</p>
+</li>
+<li><p>pattern 它表示当前消息是使用哪种模式订阅到的，如果是通过 subscribe 指令订阅的，那么这个字段就是空。</p>
+</li>
+</ul>
+<h3 id="模式订阅"><a href="#模式订阅" class="headerlink" title="模式订阅"></a>模式订阅</h3><p>上面提到的订阅模式是基于名称订阅的，消费者订阅一个主题是必须明确指定主题的名称。如果我们想要订阅多个主题，可以使用正则进行名称的匹配</p>
+<h2 id="生产者"><a href="#生产者" class="headerlink" title="生产者"></a>生产者</h2><pre><code class="bash">
+<span class="comment"># -*- coding: utf-8 -*-</span>
+import redis
+
+client = redis.StrictRedis()
+client.publish(<span class="string">"sevenshi"</span>, <span class="string">"hi"</span>)
+client.publish(<span class="string">"sevenshi"</span>, <span class="string">"i am fine,thank you"</span>)
+client.publish(<span class="string">"sevenshi"</span>, <span class="string">"and you"</span>)
+</code></pre>
+<h2 id="PubSub缺点"><a href="#PubSub缺点" class="headerlink" title="PubSub缺点"></a>PubSub缺点</h2><ul>
+<li>消息不持久化</li>
+<li>有进程挂掉时，消息不同步</li>
+</ul>
+<p>so，很鸡肋的功能。</p>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/2018/08/20/Redis主从同步/">Redis主从同步</a><a class="next" href="/2018/08/19/Redis事务/">Redis事务</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://blog.xhzyxed.cn"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Nginx/">Nginx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/http/">http</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/javascript/">javascript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/memcached/">memcached</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/mysql/">mysql</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/php/">php</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/vuejs/">vuejs</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/web安全/">web安全</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/前端构建工具/">前端构建工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/推文/">推文</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/项目/">项目</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之进程管理/">Linux学习之进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之服务与进程管理/">Linux学习之服务与进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之crontab定时任务/">Linux学习之crontab定时任务</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之文本编辑器/">Linux学习之文本编辑器</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/10/Nginx优化篇/">Nginx优化篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/php底层原理学习/">php底层原理学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Linux学习之bash-shell/">Linux学习之bash_shell</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Nginx应用篇/">Nginx应用篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/08/Nginx基础篇/">Nginx基础篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/07/memcached学习笔记/">memcached学习笔记</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://org.xhzyxed.cn/" title="小猴子与小耳朵" target="_blank">小猴子与小耳朵</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">其斤.匕禾页.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>

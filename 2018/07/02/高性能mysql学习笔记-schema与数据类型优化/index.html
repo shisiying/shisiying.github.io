@@ -1,0 +1,95 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="努力，奋斗！"><title>高性能mysql学习笔记--schema与数据类型优化 | 其斤.匕禾页</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/8.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">高性能mysql学习笔记--schema与数据类型优化</h1><a id="logo" href="/.">其斤.匕禾页</a><p class="description">永远相信美好的事情即将发生</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="https://www.xhzyxed.cn/"><i class="fa fa-user"> 关于</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">高性能mysql学习笔记--schema与数据类型优化</h1><div class="post-meta">Jul 2, 2018<span> | </span><span class="category"><a href="/categories/mysql/">mysql</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#选择优化的数据类型"><span class="toc-number">1.</span> <span class="toc-text">选择优化的数据类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-整数类型"><span class="toc-number">1.1.</span> <span class="toc-text">1.整数类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-实数类型"><span class="toc-number">1.2.</span> <span class="toc-text">2.实数类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-字符串类型"><span class="toc-number">1.3.</span> <span class="toc-text">3.字符串类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-使用枚举（ENUM）代替字符串类型"><span class="toc-number">1.4.</span> <span class="toc-text">4.使用枚举（ENUM）代替字符串类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-日期和时间类型"><span class="toc-number">1.5.</span> <span class="toc-text">5.日期和时间类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-位数据类型"><span class="toc-number">1.6.</span> <span class="toc-text">6.位数据类型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#范式和反范式"><span class="toc-number">2.</span> <span class="toc-text">范式和反范式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-数据库第一范式，第二范式、第三范式"><span class="toc-number">2.1.</span> <span class="toc-text">1.数据库第一范式，第二范式、第三范式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-范式化的优点和缺点"><span class="toc-number">2.2.</span> <span class="toc-text">2.范式化的优点和缺点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-反范式化的有点和缺点"><span class="toc-number">2.3.</span> <span class="toc-text">3.反范式化的有点和缺点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-混用范式化和反范式化"><span class="toc-number">2.4.</span> <span class="toc-text">4.混用范式化和反范式化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#缓存表和汇总表"><span class="toc-number">3.</span> <span class="toc-text">缓存表和汇总表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#计数器表"><span class="toc-number">4.</span> <span class="toc-text">计数器表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#加快ALTER-TABLE操作的速度"><span class="toc-number">5.</span> <span class="toc-text">加快ALTER TABLE操作的速度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">6.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="post-content"><p>良好的逻辑设计和物理设计是高性能的基石，应该根据系统将要执行的查询语句来设计schema。<br><a id="more"></a></p>
+<h2 id="选择优化的数据类型"><a href="#选择优化的数据类型" class="headerlink" title="选择优化的数据类型"></a>选择优化的数据类型</h2><h3 id="1-整数类型"><a href="#1-整数类型" class="headerlink" title="1.整数类型"></a>1.整数类型</h3><ul>
+<li>TINYINT 8位</li>
+<li>SMALLINT 16位</li>
+<li>MEDIUMINT 24位</li>
+<li>INT 32位</li>
+<li>GININT 64位</li>
+</ul>
+<p>注意：</p>
+<p>整数还有可选的UNSIGNED属性，表示不允许负值，例如TINYINT UNSIGNED可以存储的范围是0~255 而TINYINT的存储范围是-128~127</p>
+<p>MySQL可以为证书类型指定宽度，例如int(1),int(11),但是这对大多数应用是没有意义的，他不会限制值的合法范围。</p>
+<h3 id="2-实数类型"><a href="#2-实数类型" class="headerlink" title="2.实数类型"></a>2.实数类型</h3><p>实数是带有小数部分的数字</p>
+<ul>
+<li>DECIMAL类型用于存储精确的小数，浮点类型在存储同样范围的值时，通常比DECIMAL使用更少的空间，</li>
+<li>只在对小数进行精确计算时才使用decimal，数据量比较大的时候，使用BIGINT来代替，乘以相应的倍数</li>
+</ul>
+<h3 id="3-字符串类型"><a href="#3-字符串类型" class="headerlink" title="3.字符串类型"></a>3.字符串类型</h3><p>1） VARCHAR和CHAR是主要的字符串类型</p>
+<ul>
+<li>适合使用VAGCHAR类型（VARCHAR还需要1或者2个额外字节来记录字符串的长度）<br>字符串的最大长度比平均长度大很多，列的更新很少</li>
+<li><p>适合使用CHAR类型<br>适合存储很短的字符串或者所有值都接近同一个长度，经常变更的数据</p>
+<p>与上述相同的类型还有BINARY和VARBINARY,存储的是二进制字符串，存储的是字节码<br>二进制比较的优势体现在(1）无大小写敏感，每次按一个字节进行比较，所以速度比字符比较简单很多</p>
+</li>
+</ul>
+<p>2）BLOB（采用二进制）和TEXT（字符方式）类型<br>都是为存储很大的数据而设计的字符类型</p>
+<p>尽量避免使用这两种类型，如果使用到，使用字符截取来使用SUBSTRING</p>
+<h3 id="4-使用枚举（ENUM）代替字符串类型"><a href="#4-使用枚举（ENUM）代替字符串类型" class="headerlink" title="4.使用枚举（ENUM）代替字符串类型"></a>4.使用枚举（ENUM）代替字符串类型</h3><p>枚举列可以把一些不重复的字符胡灿存储成一个预定义的集合</p>
+<ul>
+<li>枚举实际存储为证书，而不是字符串</li>
+<li>字段排序使用内部存储的证书而不是定义的字符串，可以使用FILED进行显示指定排序</li>
+<li>适合固定的字符串列表。</li>
+</ul>
+<h3 id="5-日期和时间类型"><a href="#5-日期和时间类型" class="headerlink" title="5.日期和时间类型"></a>5.日期和时间类型</h3><p>DATETIME 1001~9999 精度为秒 8个字节 与时区无关<br>TIMESTAMP 1970~2038 4个字节 依赖时区，没有指定值的时候，MySQL会设置当前时间</p>
+<p>除了特殊行为之外，尽量使用TIMESTAMP</p>
+<h3 id="6-位数据类型"><a href="#6-位数据类型" class="headerlink" title="6.位数据类型"></a>6.位数据类型</h3><ul>
+<li>BIT</li>
+<li>SET<br>尽量不使用这种类型</li>
+</ul>
+<h2 id="范式和反范式"><a href="#范式和反范式" class="headerlink" title="范式和反范式"></a>范式和反范式</h2><h3 id="1-数据库第一范式，第二范式、第三范式"><a href="#1-数据库第一范式，第二范式、第三范式" class="headerlink" title="1.数据库第一范式，第二范式、第三范式"></a>1.数据库第一范式，第二范式、第三范式</h3><ul>
+<li>第一范式:确保每列的原子性(强调的是列的原子性，即列不能够再分成其他几列).如果每列(或者每个属性)都是不可再分的最小数据单元(也称为最小的原子单元),则满足第一范式.<br>例如:顾客表(姓名、编号、地址、……)其中”地址”列还可以细分为国家、省、市、区等。</li>
+</ul>
+<ul>
+<li><p>第二范式:在第一范式的基础上更进一层,目标是确保表中的每列都和主键相关(一是表必须有一个主键；二是没有包含在主键中的列必须完全依赖于主键，而不能只依赖于主键的部分)<br>如果一个关系满足第一范式,并且除了主键以外的其它列,都依赖于该主键,则满足第二范式.<br>例如:订单表(订单编号、产品编号、定购日期、价格、……)，”订单编号”为主键，”产品编号”和主键列没有直接的关系，即”产品编号”列不依赖于主键列，应删除该列。</p>
+</li>
+<li><p>第三范式:在第二范式的基础上更进一层,目标是确保每列都和主键列直接相关,而不是间接相关(另外非主键列必须直接依赖于主键，不能存在传递依赖).<br>如果一个关系满足第二范式,并且除了主键以外的其它列都不依赖于主键列,则满足第三范式.<br>了理解第三范式，需要根据Armstrong公里之一定义传递依赖。假设A、B和C是关系R的三个属性，如果A-〉B且B-〉C，则从这些函数依赖中，可以得出A-〉C，如上所述，<br>依赖A-〉C是传递依赖。例如:订单表(订单编号，定购日期，顾客编号，顾客姓名，……)，初看该表没有问题，满足第二范式，每列都和主键列”订单编号”相关，再细看你会发现”顾客姓名”和”顾客<br>编号”相关，”顾客编号”和”订单编号”又相关，最后经过传递依赖，”顾客姓名”也和”订单编号”相关。为了满足第三范式，应去掉”顾客姓名”列，放入客户表中。</p>
+</li>
+</ul>
+<h3 id="2-范式化的优点和缺点"><a href="#2-范式化的优点和缺点" class="headerlink" title="2.范式化的优点和缺点"></a>2.范式化的优点和缺点</h3><ul>
+<li><p>优点是在写密集的场景，更新操作快，表更小，很少有冗余的数据，更少的需要DISTINCT或者GROUPBY</p>
+</li>
+<li><p>范式化的设计的schema的缺点通常是需要关联，代价昂贵，也可能使一些索引策略无效</p>
+</li>
+</ul>
+<h3 id="3-反范式化的有点和缺点"><a href="#3-反范式化的有点和缺点" class="headerlink" title="3.反范式化的有点和缺点"></a>3.反范式化的有点和缺点</h3><ul>
+<li>优点是可以避免关联</li>
+<li>增加表/或者字段保存冗余数据</li>
+</ul>
+<h3 id="4-混用范式化和反范式化"><a href="#4-混用范式化和反范式化" class="headerlink" title="4.混用范式化和反范式化"></a>4.混用范式化和反范式化</h3><p>单独使用一种都是理想化的东西，在真实世界很少有这么极端的使用</p>
+<h2 id="缓存表和汇总表"><a href="#缓存表和汇总表" class="headerlink" title="缓存表和汇总表"></a>缓存表和汇总表</h2><p>有时候提升性能最好的方法是在同一张表中保存衍生的冗余数据，有时候也需要创建一张完全独立的汇总表或者缓存表</p>
+<ul>
+<li>缓存表<br>表示存储那些可以比较简单地从schema其他白表获取（但是每次获取的速度比较慢）数据的表</li>
+</ul>
+<p>例子：<br>需要计算一个网站24小时发送的消息树，在一个很繁忙的网站不可能维护一个实时准确的计数器，作为替代方案，可以每小时生成一张汇总表，这样一条简单的查询就可以做到<br>可以避免扫描大数据信息表的所有行</p>
+<ul>
+<li>汇总表<br>保存的是使用GROUP BY 语句聚合数据的表</li>
+</ul>
+<p>注：<br>当重建汇总表和缓存表时候，通常需要保证数据在操作时依然可用，这就需要通过影子表来实现</p>
+<p>影子表指的是在一张真实表背后创建的表，复制来表为新表，并把新表当老表，一旦新表数据有问题，可以快速的进行回滚操作</p>
+<h2 id="计数器表"><a href="#计数器表" class="headerlink" title="计数器表"></a>计数器表</h2><p>如果在应用中保存计数器，则在更新计数器时可能碰到并发问题，则计数器表在web应用中很常见，比如，可以用缓存缓存一个用户的朋友数量，文件下载次数，创建一张独立的表存储技术器是个好主意</p>
+<p>因为计数器更新操作很多，这条记录都有一个全局的互斥锁，如果要获得更高的并发性能，可以将计数器保存在多行中，每次随机选择一行进行更新</p>
+<h2 id="加快ALTER-TABLE操作的速度"><a href="#加快ALTER-TABLE操作的速度" class="headerlink" title="加快ALTER TABLE操作的速度"></a>加快ALTER TABLE操作的速度</h2><p>表重建的操作</p>
+<ul>
+<li>现在一台不提供服务的机器上执行更改操作，然后与提供服务的主库进行切换</li>
+<li>影子拷贝，创建一张和原表无关的新表，通过重命名和删表操作交换两张表</li>
+</ul>
+<p>不重建表的操作<br>更改或者删除的列的默认值</p>
+<ul>
+<li>使用ALTER COLUMN操作来改表列的默认值</li>
+</ul>
+<p>只修改.frm操作（非官方文档）<br>下列这些操作有可能不需要重建表</p>
+<ul>
+<li>移除一个列的AUTO_INCREMENT属性</li>
+<li>增加，移除或者更改ENUM或者SET常量</li>
+</ul>
+<p>基本的技术是为想要的表结构创建一个新的.frm文件，然后用他替换掉已经存在的那张表的.frm文件</p>
+<p>像下面这样<br>1）创建一张有相同结构的空表，并进行所需要的修改<br>2）执行flush tables with read lock 关闭所有正在使用的表，禁止读操作<br>3）交换.frm文件<br>4）执行 unlock tables 释放读锁</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>良好的简单schema设计原则是普遍适用的</p>
+<ul>
+<li>使用小而简单的合适数据类型，除非真实数据模型有确切的需要，否则应该尽可能的避免使用NULL值</li>
+<li>尽量使用相同的数据类型存储相似或者相关的值，特别是在关联条件中使用的列</li>
+<li>注意可变字符串，其在临时表和排序时可能导致悲观的按最大长度分配内存</li>
+<li>尽量使用整型定义标识列</li>
+<li>范式十号，但是反范式（虽然意味着重复数据），有时也是必须的，并且能够带来好处</li>
+<li>最后，更改表操作是让人痛苦的，大部分情况下，都会锁表并且重建整张表</li>
+</ul>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/2018/07/03/高性能mysql学习笔记-创建高性能的索引/">高性能mysql学习笔记-创建高性能的索引</a><a class="next" href="/2018/07/02/redis基础-数据结构与常用操作命令/">Redis基础-数据结构与常用操作命令</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://blog.xhzyxed.cn"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Nginx/">Nginx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/http/">http</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/javascript/">javascript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/memcached/">memcached</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/mysql/">mysql</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/php/">php</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/vuejs/">vuejs</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/web安全/">web安全</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/前端构建工具/">前端构建工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/推文/">推文</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/项目/">项目</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之进程管理/">Linux学习之进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之服务与进程管理/">Linux学习之服务与进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之crontab定时任务/">Linux学习之crontab定时任务</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之文本编辑器/">Linux学习之文本编辑器</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/10/Nginx优化篇/">Nginx优化篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/php底层原理学习/">php底层原理学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Linux学习之bash-shell/">Linux学习之bash_shell</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Nginx应用篇/">Nginx应用篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/08/Nginx基础篇/">Nginx基础篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/07/memcached学习笔记/">memcached学习笔记</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://org.xhzyxed.cn/" title="小猴子与小耳朵" target="_blank">小猴子与小耳朵</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">其斤.匕禾页.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>

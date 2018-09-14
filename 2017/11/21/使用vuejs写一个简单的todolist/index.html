@@ -1,0 +1,117 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="努力，奋斗！"><title>使用vuejs写一个简单的todolist | 其斤.匕禾页</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/8.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">使用vuejs写一个简单的todolist</h1><a id="logo" href="/.">其斤.匕禾页</a><p class="description">永远相信美好的事情即将发生</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="https://www.xhzyxed.cn/"><i class="fa fa-user"> 关于</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">使用vuejs写一个简单的todolist</h1><div class="post-meta">Nov 21, 2017<span> | </span><span class="category"><a href="/categories/vuejs/">vuejs</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div></div></div><div class="post-content"><p>以下是学习vue的一点demo,涉及到数据双向绑定v-model，事件触发预处理v:<br><a id="more"></a></p>
+<p><img src="task.gif" alt=""></p>
+<p>代码如下：</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;Title&lt;/title&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;css/bootstrap.min.css&quot;&gt;
+    &lt;style&gt;
+        .completed{
+            color: green;
+            text-decoration: line-through;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;nav class=&quot;navbar navbar-default&quot;&gt;
+    &lt;div class=&quot;container-fluid&quot;&gt;
+        &lt;div class=&quot;navbar-header&quot;&gt;
+            &lt;a class=&quot;navbar-brand&quot; href=&quot;#&quot;&gt;
+                Todo list
+            &lt;/a&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/nav&gt;
+&lt;div class=&quot;container&quot; id=&quot;app&quot;&gt;
+    &lt;div class=&quot;col-md-8 col-md-offset-2&quot;&gt;
+        &lt;div class=&quot;panel panel-default&quot;&gt;
+            &lt;div class=&quot;panel-heading&quot;&gt;WelCome to My list&lt;/div&gt;
+            &lt;div class=&quot;panel-body&quot;&gt;
+                &lt;h1&gt;My todos{{todoCount}}&lt;/h1&gt;
+                &lt;todo-items :todos=&quot;todos&quot;&gt;&lt;/todo-items&gt;
+                &lt;form-items :todos=&quot;todos&quot;&gt;&lt;/form-items&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+
+    &lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;script src=&quot;js/vue.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/x-template&quot; id=&quot;todo-items-template&quot;&gt;
+    &lt;ul class=&quot;list-group&quot;&gt;
+        &lt;li class=&quot;list-group-item&quot; v-bind:class=&quot;{&apos;completed&apos;:todo.completed}&quot; v-for=&quot;(todo,index) in todos&quot;&gt;{{todo.title}}
+            &lt;button class=&quot;btn btn-success btn-xs pull-right&quot; v-on:click=&quot;completeTodo(todo)&quot;&gt;完成&lt;/button&gt;
+            &lt;button class=&quot;btn btn-warning btn-xs pull-right&quot; v-on:click=&quot;deleteTodo(index)&quot;&gt;删除&lt;/button&gt;
+        &lt;/li&gt;
+    &lt;/ul&gt;
+&lt;/script&gt;
+&lt;script type=&quot;text/x-template&quot; id=&quot;form-template&quot;&gt;
+    &lt;form v-on:submit.prevent=&quot;addTodo(newtodo)&quot;&gt;
+        &lt;div class=&quot;form-group&quot;&gt;
+            &lt;input type=&quot;text&quot; class=&quot;form-control&quot; v-model=&quot;newtodo.title&quot; placeholder=&quot;添加一个任务&quot;&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;form-group&quot;&gt;
+            &lt;button class=&quot;btn btn-success&quot; type=&quot;submit&quot;&gt;添加&lt;/button&gt;
+        &lt;/div&gt;
+    &lt;/form&gt;
+&lt;/script&gt;
+&lt;script&gt;
+    Vue.component(&apos;todo-items&apos;,{
+       template:&apos;#todo-items-template&apos;,
+        props:[&apos;todos&apos;],
+        methods:{
+            deleteTodo:function (index) {
+                console.log(index);
+                this.todos.splice(index,1);
+            },
+            completeTodo:function (todo) {
+                if (!todo.completed) {
+                    todo.completed = true
+                } else {
+                    alert(&apos;该任务已完成&apos;);
+                }
+            }
+        }
+    });
+    Vue.component(&apos;form-items&apos;,{
+        template:&apos;#form-template&apos;,
+        props:[&apos;todos&apos;],
+        data(){
+          return {
+              newtodo:{id:null,title:&apos;&apos;,completed:false}
+          }
+        },
+        methods: {
+            addTodo: function (newTodo) {
+                if (newTodo.title == &apos;&apos;) {
+                    alert(&apos;不能为空！&apos;)
+                } else {
+                    this.todos.push(newTodo);
+                    this.newtodo = {id: null, title: &apos;&apos;, completed: false}
+                }
+            }
+        }
+
+    });
+    new Vue({
+        el:&apos;#app&apos;,
+        data:{
+            message:&apos;Hello World&apos;,
+            todos:[
+                {id:1,title:&apos;hello world&apos;,completed:true},
+                {id:2,title:&apos;hello china&apos;,completed:false}
+            ],
+        },
+        computed:{
+          todoCount:function () {
+              return this.todos.length;
+          }
+        },
+    });
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre></div><div class="tags"></div><div class="post-nav"><a class="pre" href="/2017/12/01/http图解系列2/">http图解系列2</a><a class="next" href="/2017/11/16/php知识图谱/">php知识图谱</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://blog.xhzyxed.cn"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Nginx/">Nginx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/http/">http</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/javascript/">javascript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/memcached/">memcached</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/mysql/">mysql</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/php/">php</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/vuejs/">vuejs</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/web安全/">web安全</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/前端构建工具/">前端构建工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/推文/">推文</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/项目/">项目</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之进程管理/">Linux学习之进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之服务与进程管理/">Linux学习之服务与进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之crontab定时任务/">Linux学习之crontab定时任务</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之文本编辑器/">Linux学习之文本编辑器</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/10/Nginx优化篇/">Nginx优化篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/php底层原理学习/">php底层原理学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Linux学习之bash-shell/">Linux学习之bash_shell</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Nginx应用篇/">Nginx应用篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/08/Nginx基础篇/">Nginx基础篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/07/memcached学习笔记/">memcached学习笔记</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://org.xhzyxed.cn/" title="小猴子与小耳朵" target="_blank">小猴子与小耳朵</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">其斤.匕禾页.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="努力，奋斗！"><title>Redis基础-数据结构与常用操作命令 | 其斤.匕禾页</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/8.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Redis基础-数据结构与常用操作命令</h1><a id="logo" href="/.">其斤.匕禾页</a><p class="description">永远相信美好的事情即将发生</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="https://www.xhzyxed.cn/"><i class="fa fa-user"> 关于</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Redis基础-数据结构与常用操作命令</h1><div class="post-meta">Jul 2, 2018<span> | </span><span class="category"><a href="/categories/Redis/">Redis</a></span></div><div class="post-content"><p>Redis是一个速度非常快的非关系数据库，它可以存储键与5种不同类型的值之间的映射，可以将存储在内存的键值对数据持久化到硬盘，可以使用复制特性来扩展读性能，还可以使用客户端分片来扩展性能</p>
+<a id="more"></a>
+<p>数据结构简介</p>
+<h2 id="STRING-字符串"><a href="#STRING-字符串" class="headerlink" title="STRING(字符串)"></a>STRING(字符串)</h2><p>可以存储字符串，整数或者浮点数</p>
+<ul>
+<li>字符串命令<br>1)GET 获取存储在给定键中的值<br>2)SET 设置存储在给定键中的值<br>3)DEL 删除存储在给定键中的值（这个命令可以用于任何类型）</li>
+</ul>
+<ul>
+<li><p>自增/自减操作<br>1）INCR key-name<br>2）DECR KEY-name<br>3) INCRBY key-name amount<br>4）DECRBY key-name amount<br>5)incrbyfloat key-name amount</p>
+</li>
+<li><p>处理子串和二进制位的命令<br>1）APPEND key-name value 将值追加到给定键key-name当前存储的值的末尾<br>2）GETRANGE key-name start end 获取偏移量范围内的子串<br>3）SETANGE key-name offset value start开始设置为给定值<br>4）GETBIT key-name offset  返回位串中偏移量为offset的二进制位的值<br>5）SETBIT key-name offset value<br>6）BITCOUNT key-name统计二进制位串里面值为1的二进制位的数量</p>
+</li>
+</ul>
+<h2 id="LIST-列表"><a href="#LIST-列表" class="headerlink" title="LIST(列表)"></a>LIST(列表)</h2><p>存储一个链表，链表上的每个节点都包含了一个字符串</p>
+<ul>
+<li><p>常用命令<br>1）RPUSH key-name value 将给定值推入列表的右端<br>2）LPUSH key-name value 将给定值推入列表的左端<br>3）LRANGE key-name start end 获取列表在给定范围上的所有值<br>4）LINDEX key-name index 获取列表在给定位置上的单个元素<br>5）LPOP key-name 从列表的左端弹出一个值，并返回被弹出的值<br>6）LTRIM key-name start end 只保留从start偏移量到end偏移量范围内的元素</p>
+</li>
+<li><p>阻塞式的列表弹出命令以及在列表之间移动元素的命令<br>1）BLPOP key-name timeout 从第一个非空列表中弹出位于最左端的元素，或者在timeout秒之内阻塞并等待可弹出的元素出现<br>2）BRPOP 同上<br>3）RPOPLPUSH source-key dest-key 从source-key列表中弹出位于最右端的元素，然后将这个元素推入dest-key列表的最左端，并向用户返回这个元素<br>4）BRPOPLPUSH source-key dest-key 从source-key列表中弹出位于最右端的元素，然后将这个元素推入dest-key列表的最左端，并向用户返回这个元素，如果source-key为空，则在timeout秒之内阻塞并等待可弹出的元素出现</p>
+</li>
+</ul>
+<h2 id="SET-集合"><a href="#SET-集合" class="headerlink" title="SET(集合)"></a>SET(集合)</h2><p>包含字符串的无序收集器，并且被包含的每个字符串都是独一无二的</p>
+<ul>
+<li><p>常用命令<br>1）SAD key-name item 将给定元素添加到集合<br>2）SMEMBERS key-name 返回集合包含的所有元素<br>3）SISMEMBER key-name item检查给定元素是否存在于集合中<br>4）SREM key-name item  如果给定的元素存在于集合中，那么移除这个元素<br>5）SCARD key-name 返回集合包含的元素的数量</p>
+</li>
+<li><p>用于组合和处理多个集合的Redis命令<br>1）SDIFF key-name 求差集，只存在第一个集合，不存在其他集合中的元素<br>2）SDIFFSTORE dest-key keyname 差集放到dest-key中<br>3）SINTER key-name 交集<br>4）SINTERSTORE dest-key keyname 交集放到dest-key中<br>5）SUNION keyname keyname 并集<br>6）SUNIONSTORE dest-key key-name 将并集放到dest-key中去</p>
+</li>
+</ul>
+<h2 id="HASH-哈希"><a href="#HASH-哈希" class="headerlink" title="HASH(哈希)"></a>HASH(哈希)</h2><p>包含键值对的无序散列表</p>
+<ul>
+<li><p>用于添加和删除键值对的散列操作<br>1）HMGET key-name key 从散列获取键的值<br>2）HMSET KEY-name key value 为散列里面的一个或多个建设置值<br>3）HDEL kye-name key 删除散列里面的一个或多个键值对<br>4）HLEN key-name 返回散列包含的键值对数量</p>
+</li>
+<li><p>散列高级特性操作<br>1）HEXISTS key-name key 检查给定键是否存在于散列中<br>2）HEKYS key-name 获取散列包含的所有键<br>3）HVALS key-name 获取散列包含的所有值<br>4）HGETALL key-name 获取散列包含的所有键值对<br>5) HINCRBY key-name key increment 将key存储的值加上证书increment<br>6）HINCRBYFLOAT key-name key increment key存储的值加上increment</p>
+</li>
+</ul>
+<h2 id="ZSET-有序集合"><a href="#ZSET-有序集合" class="headerlink" title="ZSET(有序集合)"></a>ZSET(有序集合)</h2><p>字符串成员与浮点数分值的有序映射，元素的排列顺序由分支的大小决定</p>
+<ul>
+<li><p>常用的有序集合命令<br>1）ZADD key-name score member 添加给定分值的成员到有序集合里面<br>2）ZREM key-name member 从有序集合里面移除指定的成员<br>3）ZCARD key-name 返回有序集合包含的成员数量<br>4）ZINCRBY key-name increment meber 将member成员的分值加上increment<br>5)ZCOUNT key-name min max 返回分值介于min和max之间的成员数量<br>6）ZRANK key-name member 返回成员member在有序集合的排名<br>7）ZSCORE key-name member 返回成员的分值<br>8）ZRANGE key-name start stop 返回有序集合中排名介于ustart和stop之间的成员</p>
+</li>
+<li><p>有序集合范围型数据获取命令和范围型数据删除命令以及并集命令和交集命令<br>1）ZREVRANK key-name member 返回有序集合里成员的排名，按照从大到小排名<br>2）ZREVRANGE key-name start stop 返回有序集合里给定排名范围内的成员，成员按照从大到小排列<br>3）ZRANGEBYSCORE key min max 返回有序集合中，分支介于min和max之间的所有成员<br>4）ZREVRANGEBYUSCORE key min max 获取有序集合中分值介于min和max之间的所有成员 并按照分值从大到小来返回<br>5）ZREMRANGEBYRANK key-name start stop 移除有序集合中排名介于start和start之间的所有成员<br>6）ZREMRANGEBYSCORE key-name min max 移除有序集合中分值介于min和max之间的所有成员<br>7) ZINTERSTORE dest-key key-count key 对给定的有序集合执行类似于集合的交集运算<br>8）ZUNIONSTORE dest-key key-count key 对给定的有序集合执行类似于集合的并集运算</p>
+</li>
+</ul>
+<h2 id="发布和订阅命令"><a href="#发布和订阅命令" class="headerlink" title="发布和订阅命令"></a>发布和订阅命令</h2><p>发布与订阅的特点是，订阅者负责订阅频道，发送者负责向频道发送二进制字符串消息，每当有消息被发送至给定频道时，频道的所有订阅者都会受到消息</p>
+<p>Redis提供的发布与订阅命令<br>1)SUBSCRIBE channel1 订阅给定的一个或多个频道<br>2）UNSUBSCRIBE channel1 退订给定的一个或多个频道，如果执行没有给定任何频道，那么退订所有频道<br>3）PUBLISH channel message 向给定的频道发送消息<br>4）PSUBSCRIBE pattern 订阅与给定模式相匹配的所有频道<br>5）PUNSUBSCRIBE pattern 退订给定的模式，如果执行时没有给定任何模式，那么退订所有模式</p>
+<h2 id="排序"><a href="#排序" class="headerlink" title="排序"></a>排序</h2><ul>
+<li>命令<br>SORT source-key </li>
+</ul>
+<h2 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h2><ul>
+<li>命令<br>MULTI EXEC 被这两个命令包裹的指令都会一个接一个的执行，知道所有命令都执行完毕。</li>
+</ul>
+<h2 id="键的过期时间"><a href="#键的过期时间" class="headerlink" title="键的过期时间"></a>键的过期时间</h2><p>在使用Redis存储数据的时候，有些数据可能在某个时间点之后就不再游泳了，用户可以使用DEL命令显式的删除这些无用数据，也可以通过Redis的国企时间特性来让一个键在给定时限后自动被删除，</p>
+<ul>
+<li>用于处理过期时间Redis命令<br>1） PERSIST key-name 移除键的过期时间<br>2） TTL key-name 查看给定键距离过期还有多少秒<br>3） EXPIRE key-name seconds 让给定键在指定的秒数之后过期<br>4)  EXPIREAT key-name timestamp 将给定键的过期时间设置为给定的UNIX时间戳<br>5） PTTL key-name 查看给定键距离过期时间还有多少毫秒<br>6） PEXPIRE key-name milliseconds 让给定键在指定的毫秒数之后过期<br>7） PEXPIREAT key-name timestamp-milliseconds 将一个毫秒级精确度的UNIX时间戳设置为给定的过期时间</li>
+</ul>
+<h1 id="持久化"><a href="#持久化" class="headerlink" title="持久化"></a>持久化</h1><p>Redis提供了两种不同的持久化方法来将数据存储到硬盘里面,将内存中的数据存储到硬盘的一个主要原因是为了在之后重用数据，或者是为了防止系统故障而降数据备份到一个元和才能位置</p>
+<h2 id="快照"><a href="#快照" class="headerlink" title="快照"></a>快照</h2><p>通过创建快照来获得存储在内存里面的数据在某个时间的上副本，在创建快照之后，用户可以兑快照进行备份，可以将快照复制到其他服务器创建副本，</p>
+<h2 id="创建快照的几个方法"><a href="#创建快照的几个方法" class="headerlink" title="创建快照的几个方法"></a>创建快照的几个方法</h2><ul>
+<li><p>客户端可以通过Redis发送BGSAVE来创建一个快照，开启子进程创建快照</p>
+</li>
+<li><p>SAVE命令，阻塞主进程，不常用，没有足够内存使用BGSAVE才使用</p>
+</li>
+<li><p>只追加文件 append-only file（AOF）</p>
+</li>
+<li><p>配置选项 如save 60 10000，60秒内有10000次插入</p>
+</li>
+<li><p>SHUTDOWN命令</p>
+</li>
+<li><p>一个Redis服务连接另一个Redis服务器，并向对方发送SYNC命令开始一次复制操作的时候</p>
+</li>
+</ul>
+<h2 id="适用范围"><a href="#适用范围" class="headerlink" title="适用范围:"></a>适用范围:</h2><p>快照持久化只适用于那些即使丢失一部分数据也不会造成问题的应用程序</p>
+<h2 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h2><ul>
+<li><p>个人开发</p>
+</li>
+<li><p>对日志进行聚合计算</p>
+</li>
+<li><p>大数据</p>
+</li>
+</ul>
+<h2 id="AOF持久化"><a href="#AOF持久化" class="headerlink" title="AOF持久化"></a>AOF持久化</h2><p>AOF持久化会将被执行的写明了另写到AO文件的末尾，以此来记录数据发生的变化，因此，Redis主要从头到尾重新执行以此AOF文件包含的所有写命令，就可以恢复AOF文件记录的数据集</p>
+<p>通过设置appendsync always/everysec/no 来设置命令写入的频率，通过每秒的同步一次AOF文件，Redis可以保证，即使出现系统奔溃，用户也最多只会丢失一秒之内产生的数据</p>
+<h2 id="重写压缩文件"><a href="#重写压缩文件" class="headerlink" title="重写压缩文件"></a>重写压缩文件</h2><p>AOF虽然可以保证数据，但是不断被执行的写命令记录到AOF文件中，文件的体积会越来越大，占用可用文件，</p>
+<p>使用命令BGREWITEAOF移除AOF文件中的冗余命令来重写</p>
+<h1 id="复制"><a href="#复制" class="headerlink" title="复制"></a>复制</h1><p>复制可以让其他服务器拥有一个不断更新的数据副本，从而使用的拥有数据副本的服务器可以用于处理客户端发送的读请求，</p>
+<p>单机处理请求的能力有限，可以使用复制从服务器来帮助处理客户端的请求和压力，即达到负载均衡。</p>
+<h2 id="命令"><a href="#命令" class="headerlink" title="命令"></a>命令</h2><ul>
+<li>创建从服务器</li>
+</ul>
+<p>slaveof host port</p>
+<ul>
+<li>终止复制</li>
+</ul>
+<p>slaveof no one</p>
+<h2 id="复制的启动过程"><a href="#复制的启动过程" class="headerlink" title="复制的启动过程"></a>复制的启动过程</h2><p>主服务器接受到从服务器的请求时候，生成快照文件，同时在缓冲区记录这区间的Redis执行的写命令，然后发送快照文件以及缓冲区命令给从服务器，最后，每执行一个写命令，就向从服务器发送相同的写命令。</p>
+<p>注意：</p>
+<ul>
+<li><p>从服务器进行同步时，会清空自己的所有数据</p>
+</li>
+<li><p>Redis不支持主主复制</p>
+</li>
+</ul>
+<h2 id="主从链"><a href="#主从链" class="headerlink" title="主从链"></a>主从链</h2><h2 id="检验硬盘写入"><a href="#检验硬盘写入" class="headerlink" title="检验硬盘写入"></a>检验硬盘写入</h2><h1 id="处理系统故障"><a href="#处理系统故障" class="headerlink" title="处理系统故障"></a>处理系统故障</h1><h2 id="验证快照文件和AOF文件"><a href="#验证快照文件和AOF文件" class="headerlink" title="验证快照文件和AOF文件"></a>验证快照文件和AOF文件</h2><ul>
+<li><p>Redis-check-aof </p>
+</li>
+<li><p>Redis-check-dump</p>
+</li>
+</ul>
+<h2 id="更换故障主服务器"><a href="#更换故障主服务器" class="headerlink" title="更换故障主服务器"></a>更换故障主服务器</h2><p>更换服务器，生成快照文件，发送新的主服务器，将其他从属关系重新配置</p>
+<h1 id="Redis事务"><a href="#Redis事务" class="headerlink" title="Redis事务"></a>Redis事务</h1><p>为了保证数据的正确性，在多个客户端同事处理相同的数据时，不谨慎的操作很容易会导致数据错误，这时候就要用到事务了，Redis的事务跟关系型数据库的事务不一样，关系数据库会对呗访问的数据进行加锁，直到事务被提交或者被回滚为止，如果有其他客户端试图对加锁的数据行进行写入，那么该客户端会被阻塞，直到第一个事务执行完毕，因为加锁有可能会造成长时间的等待，所以Redis为了尽可能的减少客户端的等待时间，并不会对数据进行加锁，Redis采用的是乐观锁，数据被其他客户端抢先修改了情况，通知执行了watch命令的客户端。</p>
+<ul>
+<li>命令<br>MULIT 类似于关系数据库的BEGIN</li>
+</ul>
+<p>EXEC 类似于关系数据库的commit</p>
+<p>WATCH 对需要监控的键进行监控，如果键被修改，则会抛出WATCHERROR</p>
+<p>UNWATCH 取消监控，在watch命令执行之后，MULI命令执行之前对连接池进行重置</p>
+<p>DISCARD 在MULI命令执执行之后，EXEC执行之前对连接池进行重置。</p>
+<h1 id="非事务型流水线"><a href="#非事务型流水线" class="headerlink" title="非事务型流水线"></a>非事务型流水线</h1><p>在需要执行大量命令的情况下即使命令实际上并不需要放在事务里面执行，但是为了通过一次发送所有命令来减少通信次数并降低延迟值，用户也可能将命令包裹在MULTI 和EXEC里面执行，但是事务会消耗资源，并且可能会导致其他重要的命令被延迟执行，</p>
+<p>pipelin(false)<br>…命令<br>pipe.exeute</p>
+<h1 id="性能测试"><a href="#性能测试" class="headerlink" title="性能测试"></a>性能测试</h1><p>Redis-benchmarkr</p>
+</div><div class="tags"><a href="/tags/Redis/">Redis</a></div><div class="post-nav"><a class="pre" href="/2018/07/02/高性能mysql学习笔记-schema与数据类型优化/">高性能mysql学习笔记--schema与数据类型优化</a><a class="next" href="/2018/07/02/MySQL架构与基本特性/">MySQL架构与基本特性</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://blog.xhzyxed.cn"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Nginx/">Nginx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/http/">http</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/javascript/">javascript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/memcached/">memcached</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/mysql/">mysql</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/php/">php</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/vuejs/">vuejs</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/web安全/">web安全</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/前端构建工具/">前端构建工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/推文/">推文</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/项目/">项目</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之进程管理/">Linux学习之进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之服务与进程管理/">Linux学习之服务与进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之crontab定时任务/">Linux学习之crontab定时任务</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之文本编辑器/">Linux学习之文本编辑器</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/10/Nginx优化篇/">Nginx优化篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/php底层原理学习/">php底层原理学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Linux学习之bash-shell/">Linux学习之bash_shell</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Nginx应用篇/">Nginx应用篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/08/Nginx基础篇/">Nginx基础篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/07/memcached学习笔记/">memcached学习笔记</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://org.xhzyxed.cn/" title="小猴子与小耳朵" target="_blank">小猴子与小耳朵</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">其斤.匕禾页.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>

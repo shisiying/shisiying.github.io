@@ -1,0 +1,120 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="努力，奋斗！"><title>mysql-3 用户充值与转账功能的实现 | 其斤.匕禾页</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/8.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">mysql-3 用户充值与转账功能的实现</h1><a id="logo" href="/.">其斤.匕禾页</a><p class="description">永远相信美好的事情即将发生</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="https://www.xhzyxed.cn/"><i class="fa fa-user"> 关于</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">mysql-3 用户充值与转账功能的实现</h1><div class="post-meta">Sep 14, 2017<span> | </span><span class="category"><a href="/categories/mysql/">mysql</a></span></div><div class="post-content"><a id="more"></a>
+<p>在电商网站，我们经常会使用到充值与转账功能，接下来我们使用存储过程模拟充值过程。<br>本文涉及到的相关知识点</p>
+<ul>
+<li>事务，自定义异常,表锁，行锁</li>
+<li>row_count:增加，修改影响的条数</li>
+<li>found_rows:查询影响的条数</li>
+</ul>
+<p><a href="http://blog.sae.sina.com.cn/archives/2127" target="_blank" rel="noopener">mysql锁的详解</a><br><a href="https://www.2cto.com/database/201511/450387.html" target="_blank" rel="noopener">事务的详解</a><br>需求:安全性高，性能好的用户充值<br>解决方案:</p>
+<h1 id="设计表"><a href="#设计表" class="headerlink" title="设计表"></a>设计表</h1><ul>
+<li>用户余额表<pre><code class="bash">CREATE TABLE `user_blance` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT <span class="string">'用户充值表自增id'</span>,
+  `user_id` int(11) NOT NULL COMMENT <span class="string">'用户id'</span>,
+  `user_money` decimal(10,2) NOT NULL COMMENT <span class="string">'用户充值金额'</span>,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+</code></pre>
+</li>
+<li><p>用户充值记录表</p>
+<pre><code class="bash">
+CREATE TABLE `user_blance_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT <span class="string">'用户充值记录表id'</span>,
+  `user_id` int(11) DEFAULT NULL COMMENT <span class="string">'用户id'</span>,
+  `log_type` int(11) DEFAULT NULL COMMENT <span class="string">'日志类型'</span>,
+  `log_des` varchar(255) DEFAULT NULL COMMENT <span class="string">'日志描述'</span>,
+  `log_value` decimal(10,2) DEFAULT NULL COMMENT <span class="string">'日志值'</span>,
+  `log_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT <span class="string">'日志记录时间'</span>,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+</code></pre>
+<h1 id="用户充值的步骤"><a href="#用户充值的步骤" class="headerlink" title="用户充值的步骤"></a>用户充值的步骤</h1></li>
+<li><p>往日志表里面插入记录</p>
+</li>
+<li><p>若插入成功，则更新余额表的值，余额表里面需要判断用户id是否存在，如果存在则update否则insert</p>
+</li>
+</ul>
+<h2 id="存储过程模拟充值"><a href="#存储过程模拟充值" class="headerlink" title="存储过程模拟充值"></a>存储过程模拟充值</h2><pre><code class="bash">
+CREATE PROCEDURE chongzhi(IN _user_id int,IN _log_type tinyint,IN _log_des varchar(200),IN _log_value decimal(10,2))
+BEGIN
+    <span class="comment">#Routine body goes here...</span>
+    DECLARE t_error int DEFAULT 0;
+    DECLARE usercount int DEFAULT 0;
+    <span class="comment">#异常处理</span>
+    DECLARE CONTINUE HANDLER <span class="keyword">for</span> SQLEXCEPTION  <span class="built_in">set</span> t_error=1;
+    START TRANSACTION;
+    <span class="comment">#插入用户充值日志表</span>
+    INSERT INTO user_blance_log(user_id,log_type,log_des,log_value)VALUES(_user_id,_log_type,_log_des,_log_value);
+    <span class="comment">#插入到充值表中</span>
+    <span class="keyword">if</span> ROW_COUNT()&gt;0 THEN
+            <span class="comment">#判断是否存在用户</span>
+            SELECT COUNT(*) into usercount  FROM user_blance WHERE user_id=_user_id;
+            <span class="comment">#存在用，则执行update</span>
+            <span class="keyword">if</span> usercount&gt;0 THEN
+                UPDATE user_blance <span class="built_in">set</span> user_money=user_money+_log_value <span class="built_in">where</span> user_id=_user_id;
+            ELSE
+                insert into user_blance(user_id,user_money)VALUES(_user_id,_log_value);
+            END IF;
+    END IF;
+    <span class="comment">#出现异常，回滚</span>
+    <span class="keyword">if</span> t_error=1 THEN
+        ROLLBACK;
+    ELSE
+        COMMIT;
+    END IF;
+END
+</code></pre>
+<h2 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h2><ul>
+<li>多线程并发，操作不当会造成数据数据冲突<br>解决方案:mysql表锁机制</li>
+</ul>
+<p>表级锁：开销小，加锁快；不会出现死锁；锁定粒度大，发生锁冲突的概率最高，并发度最低。<br>MySQL表级锁有两种模式：表共享锁（Table Read Lock）和表独占写锁（Table Write Lock）。<br>对MyISAM的读锁，不会阻塞其他用户对同一表请求，但会阻塞对同一表的写请求；<br>对MyISAM的写锁，则会阻塞其他用户对同一表的读和写操作；<br>当一个线程获得对一个表的写锁后，只有持有锁线程可以对表进行更新操作。其他线程的读、写操作都会等待，直到锁被释放为止。<br>综上，我们应该对上述操作加上写锁</p>
+<pre><code class="bash">
+lock table user_blacne write;
+call chongzhi(3,1,<span class="string">'充值'</span>,12)
+UNLOCK tables;
+</code></pre>
+<p>保证用户余额表每次查询插入或者更新的时候只有一个会话独占，保证数据的准确性，如果在Innodb存储引擎下，使用行锁是最佳选择</p>
+<h1 id="用户转账的步骤"><a href="#用户转账的步骤" class="headerlink" title="用户转账的步骤"></a>用户转账的步骤</h1><ul>
+<li><p>查询用户的余额，并锁住转账两个用户之间用户余额表的的行数据</p>
+</li>
+<li><p>对比余额跟要转账的额度，如果超过，则跳转余额不足，否则，则更改转帐人与被转帐人的余额</p>
+</li>
+</ul>
+<h2 id="存储过程模拟用户转账与行锁"><a href="#存储过程模拟用户转账与行锁" class="headerlink" title="存储过程模拟用户转账与行锁"></a>存储过程模拟用户转账与行锁</h2><p>有索引并且使用了该索引当条件的时候就是行锁，<br>没有索引的时候就是表锁，且mysliam不支持行锁。<br>innodb 的行锁是在有索引的情况下,没有索引的表是锁定全表的.<br>在这里我们使用行级锁，保证并发操作时的数据正确性，行级锁并发度高，常用解决并发操作问题<br>行级锁有两个类型的锁，共享锁和排他锁，类似我么男表所中的读锁和写锁<br>首先为user_blance表添加用户id的索引，如图所示<br><img src="suoyin.png" alt="索引"></p>
+<p>业务过程:</p>
+<pre><code class="bash">
+CREATE PROCEDURE sp_transfer(IN fromuser int,IN touser int,IN _money decimal(10,2))
+BEGIN
+    <span class="comment">#Routine body goes here...</span>
+    DECLARE fromuser_money DECIMAL(10,2) DEFAULT 0;
+    DECLARE touser_money DECIMAL(10,2) DEFAULT 0;
+    DECLARE error bit  DEFAULT FALSE;
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET @error=<span class="literal">true</span>;
+    START TRANSACTION;
+        <span class="comment">#这里使用了行锁中的排他锁</span>
+        SELECT user_money into fromuser_money from user_blance <span class="built_in">where</span> user_id=fromuser <span class="keyword">for</span> update;
+        SELECT user_money into touser_money from user_blance <span class="built_in">where</span> user_id=touser <span class="keyword">for</span> update;
+
+        <span class="keyword">if</span> fromuser_money&lt;_money THEN
+                COMMIT;
+                SELECT <span class="string">'钱不够'</span> as result;
+        ELSE
+                <span class="built_in">set</span> fromuser_money=fromuser_money-_money;
+                <span class="built_in">set</span> touser_money=touser_money+_money;
+                UPDATE user_blance <span class="built_in">set</span> user_money=fromuser_money WHERE user_id=fromuser;
+                UPDATE user_blance <span class="built_in">set</span> user_money=touser_money WHERE user_id=touser;
+        END IF;
+        IF error=TRUE THEN
+                ROLLBACK;
+                SELECT <span class="string">'出错'</span> as result;
+        ELSE
+                COMMIT;
+                SELECT <span class="string">'转帐成功！'</span>;
+        END IF;
+
+END
+</code></pre>
+<p>最后调用存储过程</p>
+<pre><code class="bash">
+call sp_transfer
+</code></pre>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/2017/09/17/mysql-4explian的妙用/">mysql-4 sql的优化-explian以及分页查询优化</a><a class="next" href="/2017/09/12/mysql使用游标和计划任务定时更新商品总点击量-2/">mysql-2 使用游标和计划任务定时更新商品总点击量</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://blog.xhzyxed.cn"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Nginx/">Nginx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/http/">http</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/javascript/">javascript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/memcached/">memcached</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/mysql/">mysql</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/php/">php</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/vuejs/">vuejs</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/web安全/">web安全</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/前端构建工具/">前端构建工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/推文/">推文</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/项目/">项目</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之进程管理/">Linux学习之进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之服务与进程管理/">Linux学习之服务与进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之crontab定时任务/">Linux学习之crontab定时任务</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之文本编辑器/">Linux学习之文本编辑器</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/10/Nginx优化篇/">Nginx优化篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/php底层原理学习/">php底层原理学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Linux学习之bash-shell/">Linux学习之bash_shell</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Nginx应用篇/">Nginx应用篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/08/Nginx基础篇/">Nginx基础篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/07/memcached学习笔记/">memcached学习笔记</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://org.xhzyxed.cn/" title="小猴子与小耳朵" target="_blank">小猴子与小耳朵</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">其斤.匕禾页.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>

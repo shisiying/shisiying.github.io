@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="努力，奋斗！"><title>Linux学习之文本编辑器 | 其斤.匕禾页</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/8.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Linux学习之文本编辑器</h1><a id="logo" href="/.">其斤.匕禾页</a><p class="description">永远相信美好的事情即将发生</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="https://www.xhzyxed.cn/"><i class="fa fa-user"> 关于</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Linux学习之文本编辑器</h1><div class="post-meta">Sep 11, 2018<span> | </span><span class="category"><a href="/categories/Linux/">Linux</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#vi"><span class="toc-number">1.</span> <span class="toc-text">vi</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#vi三种状态"><span class="toc-number">1.1.</span> <span class="toc-text">vi三种状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#命令模式功能键"><span class="toc-number">1.2.</span> <span class="toc-text">命令模式功能键</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#末行模式"><span class="toc-number">1.3.</span> <span class="toc-text">末行模式</span></a></li></ol></li></ol></div></div><div class="post-content"><p>i编辑器是所有Unix及Linux系统下标准的编辑器，这里只是简单地总结一下它的用法和一小部分指令。<br><a id="more"></a></p>
+<h1 id="vi"><a href="#vi" class="headerlink" title="vi"></a>vi</h1><h2 id="vi三种状态"><a href="#vi三种状态" class="headerlink" title="vi三种状态"></a>vi三种状态</h2><ul>
+<li>1) 命令模式(command mode） </li>
+</ul>
+<p>　　控制屏幕光标的移动，字符、字或行的删除，移动复制某区段及进入Insert mode下，或者到 last line mode。 </p>
+<ul>
+<li>2) 输入模式（Insert mode） </li>
+</ul>
+<p>　　只有在Insert mode下，才可以做文字输入，按「ESC」键可回到命令模式。 </p>
+<ul>
+<li>3) 末行模式（last line mode） </li>
+</ul>
+<p>　　将文件保存或退出vi，也可以设置编辑环境，如查找字符串、列出行号……等。<br>　　不过一般我们在使用时把vi简化成两个模式，就是将末行模式（last linemode）也算入命令模式（command mode）。</p>
+<h2 id="命令模式功能键"><a href="#命令模式功能键" class="headerlink" title="命令模式功能键"></a>命令模式功能键</h2><ul>
+<li>1）. 输入模式 </li>
+</ul>
+<p>　　按「i」切换进入输入模式「insert mode」，按“i”进入输入模式后是从光标当前位置开始输入文件；<br>　　按「a」进入输入模式后，是从目前光标所在位置的下一个位置开始输入文字；<br>　　按「o」进入输入模式后，是插入新的一行，从行首开始输入文字。 </p>
+<ul>
+<li><p>2）. 从输入模式切换为命令模式<br>　　<br> 按「ESC」键。 </p>
+</li>
+<li><p>3）. 移动光标 </p>
+</li>
+</ul>
+<p>　　vi可以直接用键盘上的光标来上下左右移动，但正规的vi是用小写英文字母「h」、「j」、「k」、「l」，分别控制光标左、下、上、右移一格。<br>　　按「ctrl」+「b」：屏幕往“后”移动一页。<br>　　按「ctrl」+「f」：屏幕往“前”移动一页。<br>　　按「ctrl」+「u」：屏幕往“后”移动半页。<br>　　按「ctrl」+「d」：屏幕往“前”移动半页。<br>　　按数字「0」：移到文章的开头。<br>   按「G」：移动到文章的最后。<br>　　按「$」：移动到光标所在行的“行尾”。<br>　　按「^」：移动到光标所在行的“行首”<br>　　按「w」：光标跳到下个字的开头<br>　　按「e」：光标跳到下个字的字尾<br>　　按「b」：光标回到上个字的开头<br>　　按「#l」：光标移到该行的第#个位置，如：5l,56l。 </p>
+<ul>
+<li>4）. 删除文字 </li>
+</ul>
+<p>　　「x」：每按一次，删除光标所在位置的“后面”一个字符。<br>　　「#x」：例如，「6x」表示删除光标所在位置的“后面”6个字符。<br>　　「X」：大写的X，每按一次，删除光标所在位置的“前面”一个字符。<br>　　「#X」：例如，「20X」表示删除光标所在位置的“前面”20个字符。<br>　　「dd」：删除光标所在行。<br>　　「#dd」：从光标所在行开始删除#行 </p>
+<ul>
+<li>5）. 复制 </li>
+</ul>
+<p>　　「yw」：将光标所在之处到字尾的字符复制到缓冲区中。<br>　　「#yw」：复制#个字到缓冲区<br>　　「yy」：复制光标所在行到缓冲区。<br>　　「#yy」：例如，「6yy」表示拷贝从光标所在的该行“往下数”6行文字。<br>　　「p」：将缓冲区内的字符贴到光标所在位置。注意：所有与“y”有关的复制命令都必须与“p”配合才能完成复制与粘贴功能。</p>
+<ul>
+<li><p>6）. 替换 </p>
+<p>  「r」：替换光标所在处的字符。<br>  「R」：替换光标所到之处的字符，直到按下「ESC」键为止。</p>
+</li>
+<li><p>7）. 恢复上一次操作<br>　　 「u」：如果您误执行一个命令，可以马上按下「u」，回到上一个操作。按多次“u”可以执行多次回复。 </p>
+</li>
+<li><p>8）. 更改 </p>
+</li>
+</ul>
+<p>　　 「cw」：更改光标所在处的字到字尾处<br>　　 「c#w」：例如，「c3w」表示更改3个字 </p>
+<ul>
+<li>9）. 跳至指定的行 </li>
+</ul>
+<p>　　 「ctrl」+「g」列出光标所在行的行号。<br>　　 「#G」：例如，「15G」，表示移动光标至文章的第15行行首。</p>
+<h2 id="末行模式"><a href="#末行模式" class="headerlink" title="末行模式"></a>末行模式</h2><p>在使用「last line mode」之前，请记住先按「ESC」键确定您已经处于「command mode」下后，再按「：」冒号即可进入「last line mode」。 </p>
+<ul>
+<li><p>A) 列出行号<br>　<br>  「set nu」：输入「set nu」后，会在文件中的每一行前面列出行号。 </p>
+</li>
+<li><p>B) 跳到文件中的某一行 </p>
+</li>
+</ul>
+<p>　  「#」：「#」号表示一个数字，在冒号后输入一个数字，再按回车键就会跳到该行了，如输入数字15，再回车，就会跳到文章的第15行。 </p>
+<ul>
+<li><p>C) 查找字符<br>　<br>  「/关键字」：先按「/」键，再输入您想寻找的字符，如果第一次找的关键字不是您想要的，可以一直按「n」会往后寻找到您要的关键字为止。</p>
+</li>
+<li><p>D) 保存文件<br>　<br>  「w」：在冒号输入字母「w」就可以将文件保存起来。 </p>
+</li>
+<li><p>E) 离开vi<br>　<br>  「q」：按「q」就是退出，如果无法离开vi，可以在「q」后跟一个「!」强制离开vi。<br>　   「wq」：一般建议离开时，搭配「w」一起使用，这样在退出的时候还可以保存文件。 </p>
+</li>
+</ul>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/2018/09/11/Linux学习之crontab定时任务/">Linux学习之crontab定时任务</a><a class="next" href="/2018/09/10/Nginx优化篇/">Nginx优化篇</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://blog.xhzyxed.cn"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Nginx/">Nginx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/http/">http</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/javascript/">javascript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/memcached/">memcached</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/mysql/">mysql</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/php/">php</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/vuejs/">vuejs</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/web安全/">web安全</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/前端构建工具/">前端构建工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/推文/">推文</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/项目/">项目</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之进程管理/">Linux学习之进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之服务与进程管理/">Linux学习之服务与进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之crontab定时任务/">Linux学习之crontab定时任务</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之文本编辑器/">Linux学习之文本编辑器</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/10/Nginx优化篇/">Nginx优化篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/php底层原理学习/">php底层原理学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Linux学习之bash-shell/">Linux学习之bash_shell</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Nginx应用篇/">Nginx应用篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/08/Nginx基础篇/">Nginx基础篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/07/memcached学习笔记/">memcached学习笔记</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://org.xhzyxed.cn/" title="小猴子与小耳朵" target="_blank">小猴子与小耳朵</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">其斤.匕禾页.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>

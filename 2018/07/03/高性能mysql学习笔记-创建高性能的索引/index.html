@@ -1,0 +1,101 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="努力，奋斗！"><title>高性能mysql学习笔记-创建高性能的索引 | 其斤.匕禾页</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/8.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">高性能mysql学习笔记-创建高性能的索引</h1><a id="logo" href="/.">其斤.匕禾页</a><p class="description">永远相信美好的事情即将发生</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="https://www.xhzyxed.cn/"><i class="fa fa-user"> 关于</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">高性能mysql学习笔记-创建高性能的索引</h1><div class="post-meta">Jul 3, 2018<span> | </span><span class="category"><a href="/categories/mysql/">mysql</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#索引基础"><span class="toc-number">1.</span> <span class="toc-text">索引基础</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#索引类型"><span class="toc-number">2.</span> <span class="toc-text">索引类型</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#B-Tree索引"><span class="toc-number">2.1.</span> <span class="toc-text">B-Tree索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#哈希索引（hash-index）"><span class="toc-number">2.2.</span> <span class="toc-text">哈希索引（hash index）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#空间数据索引-R-Tree"><span class="toc-number">2.3.</span> <span class="toc-text">空间数据索引(R-Tree)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#全文索引查询"><span class="toc-number">2.4.</span> <span class="toc-text">全文索引查询</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#索引的优点"><span class="toc-number">2.5.</span> <span class="toc-text">索引的优点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#高性能的索引策略"><span class="toc-number">2.6.</span> <span class="toc-text">高性能的索引策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#独立的列"><span class="toc-number">2.6.1.</span> <span class="toc-text">独立的列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#前缀索引和索引选择性"><span class="toc-number">2.6.2.</span> <span class="toc-text">前缀索引和索引选择性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#多列索引"><span class="toc-number">2.6.3.</span> <span class="toc-text">多列索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#选择合适的索引列顺序（适用于B-Tree索引）"><span class="toc-number">2.6.4.</span> <span class="toc-text">选择合适的索引列顺序（适用于B-Tree索引）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#聚簇索引"><span class="toc-number">2.6.5.</span> <span class="toc-text">聚簇索引</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#InnoDB和MyISAM的数据分布对比"><span class="toc-number">2.6.5.1.</span> <span class="toc-text">InnoDB和MyISAM的数据分布对比</span></a></li></ol></li></ol></li></ol></li></ol></div></div><div class="post-content"><p>索引是存储引擎用于快速找到记录的一种数据结构，对于良好的性能非常关键，尤其是当表中的数据量越来越大的时候。</p>
+<a id="more"></a>
+<h1 id="索引基础"><a href="#索引基础" class="headerlink" title="索引基础"></a>索引基础</h1><p>类比生活中的事来理解MySQL中的索引是如何工作的，最简单的理解是，当我们想在一本书中找到某个特定的主题，一般会先看熟的索引，找到对应的页码</p>
+<p>在MySQL中，存储引擎用类似的方法使用索引，其现在索引中找到对应值，然后根据匹配的索引记录找到对应的数据行</p>
+<h1 id="索引类型"><a href="#索引类型" class="headerlink" title="索引类型"></a>索引类型</h1><h2 id="B-Tree索引"><a href="#B-Tree索引" class="headerlink" title="B-Tree索引"></a>B-Tree索引</h2><p>使用B-Tree数据结构来存储数据，大多数MySQL引擎都支持这种索引</p>
+<p>Innodb使用的是B+Tree</p>
+<p>B-Tree索引能够加快访问数据的速度，是因为存储引擎不再需要进行全表扫描来获取需要的数据，取而代之的是从索引的根节点开始搜索。</p>
+<p>（技术上来说是B+Tree，介绍B+Tree算法）</p>
+<p>B-Tree索引适用于全键值，键值范围或者前缀查找，其中键前缀查找只适用于最左前缀的查找</p>
+<p>因为索引树中的节点是有序的，所以除了按值查找之外，索引可以用于查询中的ORDER BY操作</p>
+<p>关于B-Tree索引的限制：</p>
+<ul>
+<li><p>对于多个索引列，如果不是按照索引的最左列开始查找，则无法使用索引</p>
+</li>
+<li><p>不能跳过索引中的列</p>
+</li>
+<li><p>如果查询中有某个列的范围查询，则其右边所有列都无法使用索引优化查询</p>
+</li>
+</ul>
+<h2 id="哈希索引（hash-index）"><a href="#哈希索引（hash-index）" class="headerlink" title="哈希索引（hash index）"></a>哈希索引（hash index）</h2><p>基于哈希表实现，只有精确匹配索引所有列的查询才有效，对于每一行数据，存储引擎都会对所有的索引列计算一个哈希码，哈希码是一个比较小的值，并且不同键值的行计算出来的哈希码也不一样，哈希索引将所有的哈希码存储在索引中，同事在哈希表中保存指向每个数据行的指针</p>
+<p>在MySQL中，只有Memory引擎显式支持哈希索引</p>
+<ul>
+<li><p>哈希索引只包含哈希值和行指针，而不存储字段值，所以不能使用索引中的值来避免读取行。</p>
+</li>
+<li><p>哈希索引数据并不是按照索引值顺序存储的，所以无法用于排序</p>
+</li>
+<li><p>哈希索引也不支持部分索引列匹配查找，因为哈希索引时钟是使用索引列的全部内容来计算哈希值的</p>
+</li>
+<li><p>哈希索引只支持等值比较查询，不支持范围查询</p>
+</li>
+</ul>
+<p>Innodb引擎有一个特殊功能，自哈因哈希索引，当InnoDB注意到某些索引值使用得非常频繁的时候，它会在内存基于B-Tree索引上再创建一个哈希索引，这样就让B-Tree索引也具有哈希索引的一些优点，比如快速的哈希工鞥。</p>
+<p>如果存储引擎不支持哈希索引，可以创建自定义哈希索引，类似Innodb一样一样创建索引：思路如下：<br>在B-Tree基础创建一个为哈希索引，这和真正的哈希索引不是一回事，因因为还是使用B-Tree进行查找，但是它使用哈希值而不是键本身进行索引查找，你需要做的是在查询的WHERE子句中手动指定使用哈希函数。</p>
+<h2 id="空间数据索引-R-Tree"><a href="#空间数据索引-R-Tree" class="headerlink" title="空间数据索引(R-Tree)"></a>空间数据索引(R-Tree)</h2><p>MyISAM支持空间索引，可以用作地理数据存储，可以使用任意维度来组合查询</p>
+<h2 id="全文索引查询"><a href="#全文索引查询" class="headerlink" title="全文索引查询"></a>全文索引查询</h2><p>全文索引是一种特殊类型的索引，他查找的是文本中的关键词，而不是比较索引中的值，类似于搜索引擎做的事情，而不是简单的where条件操作</p>
+<h2 id="索引的优点"><a href="#索引的优点" class="headerlink" title="索引的优点"></a>索引的优点</h2><ul>
+<li>可以让服务器快速定位到表的指定位置</li>
+<li>大大减少了服务器需要扫描的数量</li>
+<li>可以帮助服务器避免排序和临时表</li>
+<li>可以将碎金I/O变为顺序I/O</li>
+</ul>
+<p>使用索引的场景：<br>对于非常小的表，大部分情况下简单的全表查询更高效，对于中到大型的表，索引就非常有效，但对于特大型的表，建立和使用索引的代价将随之增长，这种情况下，则需要一种技术可以直接区分出查询需要的一组数据，而不是一条记录一条记录的匹配，例如，分区技术。</p>
+<h2 id="高性能的索引策略"><a href="#高性能的索引策略" class="headerlink" title="高性能的索引策略"></a>高性能的索引策略</h2><p>正确的创建和使用索引是实现高性能查询的基础，如何高效的使用索引有以下几种方法</p>
+<h3 id="独立的列"><a href="#独立的列" class="headerlink" title="独立的列"></a>独立的列</h3><p>如果查询中的列不是独立的，MySQL就不会使用索引，独立的列是指索引不能是表达式的一部分，也不能是函数的参数</p>
+<h3 id="前缀索引和索引选择性"><a href="#前缀索引和索引选择性" class="headerlink" title="前缀索引和索引选择性"></a>前缀索引和索引选择性</h3><p>对于需要索引很长的字符列，这会让索引变的大且慢，解决方法是：</p>
+<ul>
+<li>一个策略是模拟哈希索引</li>
+<li>使用索引列开始的部分字符，来做索引，</li>
+</ul>
+<p>索引的选择性=不重复的索引值（也称为基数）/数据标的记录总数，索引的选择性越高，则查询效率越高，唯一索引的选择性是1，这是最好的索引选择性，性能也是最好的<br>诀窍在于选择足够长的前缀以保证较高的选择性，同时不能太长，换句话说，前缀的基数应该接近于完整列的基数</p>
+<p>找到列适合的长度字符串之后就可以给表创建前缀索引</p>
+<p>前缀索引是一种能使索引更小，更快的有效办法，缺点是无法使用前缀索引做ORDER BY 和GROUP BY ，也无法使用前缀索引做覆盖扫描</p>
+<h3 id="多列索引"><a href="#多列索引" class="headerlink" title="多列索引"></a>多列索引</h3><p>在多个列上建立单独的单列索引大部分情况下并不能提高MySQL的查询性能，多列查询也不是简单如一些专家说，把WEHER条件里面的列都建上索引。</p>
+<p>MySQL5.0以上引入了一种叫做索引合并的策略，一定程度上可以使用表上的多个单列索引来定位指定的行，更早的MySQL版本不支持多个单列索引查询</p>
+<p>索引合并策略有时候是一种优化的结果，但实际上更多时候说明了表上的索引建的很糟</p>
+<ul>
+<li>当出现服务器对多个索引做相交操作时（多个and条件），通常意味着需要一个包含所有相关列的多列索引，而不是独立的单列索引</li>
+<li>当出现服务器对多个索引做联合操作时（多个or条件），通常意味着需要耗费大量的CPU和内存资源在算法的缓存，排序和合并操作上</li>
+</ul>
+<p>如果EXPLAIN看到有索引合并，应该好好检查一下查询和表的结构</p>
+<h3 id="选择合适的索引列顺序（适用于B-Tree索引）"><a href="#选择合适的索引列顺序（适用于B-Tree索引）" class="headerlink" title="选择合适的索引列顺序（适用于B-Tree索引）"></a>选择合适的索引列顺序（适用于B-Tree索引）</h3><p> 对于如何选择索引的列顺序有一个经验法则：</p>
+<ul>
+<li>当不需要考虑排序和分组的时候，将选择性最高的列放到索引最前列，这时候的索引的作用只是用于优化where条件的查询，然而性能不只是依赖于所有索引列的选择性，也和查询条件的具体值有关，也就是和值的分步有关，，需要那些运行频率最高的查询来调整索引列的顺序<br>使用前缀索引的选择性来选择，特殊情况特殊处理</li>
+</ul>
+<h3 id="聚簇索引"><a href="#聚簇索引" class="headerlink" title="聚簇索引"></a>聚簇索引</h3><p>聚簇索引不是一种单独的索引类型，而是一种数据存储方式，InnoDB聚簇索引实际上在同一个结构中保存了B-Tree索引和数据行，当表有聚簇索引时，它的数据行实际上存放索引的叶子页，聚簇表示数据行和相邻的键值紧凑的存储在一起，因为无法同事把数据行存放在两个不同的地方，所以一个表只有一个聚簇索引。</p>
+<p>一些数据库服务器允许选择哪个索引作为聚簇索引，直到现在还没有任何一个MySQL内建的存储引擎支持这一点，InnoDB将通过主键聚集数据，如果没有定义主键，InnoDB会选择一个唯一的非空索引代替</p>
+<p>优点：</p>
+<ul>
+<li><p>可以先把数据保存一起</p>
+</li>
+<li><p>数据访问更快，聚簇索引将索引和数据保存在同一个B-Tree中，因此从聚簇索引中获取数据通常比在非聚簇索引中查找要亏快</p>
+</li>
+<li><p>使用覆盖索引扫描的查询可以直接使用页节点中的主键值</p>
+</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li><p>聚簇数据提高了I/O密集应用的性能，如果数据全部放在内存中，聚簇索引就没什么优势了</p>
+</li>
+<li><p>插入速度严重依赖于插入顺序，按照主键的顺序插入是加载数据到InnoDB表中速度最快的方式，如果不是按照主键顺序加载数据，那么加载完成后最好使用OPTIMIZE TABLE 命令重新组织一下表</p>
+</li>
+<li><p>更新聚簇索引列的代价很高，因为会强制InnoDB将每个被更新的行移动到新的位置</p>
+</li>
+<li><p>基于聚簇索引的表在插入新行，或者主键被更新导致需要移动行的时候，可能面临页分裂的问题，当行的主键值要求必须将这一行插入到某个已满的页中时，存储引擎会将该页分裂成两个页面来容纳改行，这就是一次页分裂操作，页分裂会导致表占用更多的磁盘空间</p>
+</li>
+<li><p>聚簇索引可能导致全表扫面变慢，尤其是行比较稀疏，或者由于页分裂导致数据存储不连续的时候。</p>
+</li>
+<li><p>二级索引（非聚簇索引）可能比想像的要更大，因为在二级索引的叶子节点包含了引用行的主键列</p>
+</li>
+<li><p>二级索引访问需要两次索引查找，而不是一次</p>
+</li>
+</ul>
+<h4 id="InnoDB和MyISAM的数据分布对比"><a href="#InnoDB和MyISAM的数据分布对比" class="headerlink" title="InnoDB和MyISAM的数据分布对比"></a>InnoDB和MyISAM的数据分布对比</h4><ul>
+<li>MyISAM的数据分布</li>
+</ul>
+<p>主键跟跟其他列独立的行存储</p>
+<ul>
+<li>InnoDB的数据分布</li>
+</ul>
+<p>聚簇索引就表，InnoDB的二级索引和聚簇索引很不相同，InnoDB二级索引的叶子节点中存储的不是行指针，而是主键值</p>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/2018/07/18/一个基于server酱推送服务的laravel-package/">一个基于server酱推送服务的laravel+package</a><a class="next" href="/2018/07/02/高性能mysql学习笔记-schema与数据类型优化/">高性能mysql学习笔记--schema与数据类型优化</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://blog.xhzyxed.cn"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Nginx/">Nginx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/http/">http</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/javascript/">javascript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/memcached/">memcached</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/mysql/">mysql</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/php/">php</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/vuejs/">vuejs</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/web安全/">web安全</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/前端构建工具/">前端构建工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/推文/">推文</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/项目/">项目</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之进程管理/">Linux学习之进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之服务与进程管理/">Linux学习之服务与进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之crontab定时任务/">Linux学习之crontab定时任务</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之文本编辑器/">Linux学习之文本编辑器</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/10/Nginx优化篇/">Nginx优化篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/php底层原理学习/">php底层原理学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Linux学习之bash-shell/">Linux学习之bash_shell</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Nginx应用篇/">Nginx应用篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/08/Nginx基础篇/">Nginx基础篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/07/memcached学习笔记/">memcached学习笔记</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://org.xhzyxed.cn/" title="小猴子与小耳朵" target="_blank">小猴子与小耳朵</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">其斤.匕禾页.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>

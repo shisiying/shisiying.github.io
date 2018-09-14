@@ -1,0 +1,166 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="努力，奋斗！"><title>使用laravel开发api知识点总结 | 其斤.匕禾页</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/8.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">使用laravel开发api知识点总结</h1><a id="logo" href="/.">其斤.匕禾页</a><p class="description">永远相信美好的事情即将发生</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="https://www.xhzyxed.cn/"><i class="fa fa-user"> 关于</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">使用laravel开发api知识点总结</h1><div class="post-meta">Aug 15, 2018<span> | </span><span class="category"><a href="/categories/php/">php</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#RESTful"><span class="toc-number">1.</span> <span class="toc-text">RESTful</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#什么是RESTful"><span class="toc-number">1.1.</span> <span class="toc-text">什么是RESTful</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#为什么选择RESTful"><span class="toc-number">1.2.</span> <span class="toc-text">为什么选择RESTful</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RESTful-设计原则"><span class="toc-number">1.3.</span> <span class="toc-text">RESTful 设计原则</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HTTPS"><span class="toc-number">1.3.1.</span> <span class="toc-text">HTTPS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#域名"><span class="toc-number">1.3.2.</span> <span class="toc-text">域名</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#版本控制"><span class="toc-number">1.3.3.</span> <span class="toc-text">版本控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#用URL-定位资源"><span class="toc-number">1.3.4.</span> <span class="toc-text">用URL 定位资源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#用HTTP-动词描述操作"><span class="toc-number">1.3.5.</span> <span class="toc-text">用HTTP 动词描述操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#资源过滤"><span class="toc-number">1.3.6.</span> <span class="toc-text">资源过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#正确使用状态码"><span class="toc-number">1.3.7.</span> <span class="toc-text">正确使用状态码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据响应格式"><span class="toc-number">1.3.8.</span> <span class="toc-text">数据响应格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#对于错误的数据，可参考如下结构"><span class="toc-number">1.3.9.</span> <span class="toc-text">对于错误的数据，可参考如下结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#调用频率限制"><span class="toc-number">1.3.10.</span> <span class="toc-text">调用频率限制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#编写文档"><span class="toc-number">1.3.11.</span> <span class="toc-text">编写文档</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#DingoAPI"><span class="toc-number">2.</span> <span class="toc-text">DingoAPI</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#响应"><span class="toc-number">2.1.</span> <span class="toc-text">响应</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#异常处理"><span class="toc-number">2.2.</span> <span class="toc-text">异常处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Transformers"><span class="toc-number">2.3.</span> <span class="toc-text">Transformers</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#api认证"><span class="toc-number">2.4.</span> <span class="toc-text">api认证</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Token-验证"><span class="toc-number">2.4.1.</span> <span class="toc-text">Token 验证</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Include机制"><span class="toc-number">2.5.</span> <span class="toc-text">Include机制</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#自动化测试"><span class="toc-number">3.</span> <span class="toc-text">自动化测试</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#单元测试"><span class="toc-number">3.1.</span> <span class="toc-text">单元测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#API-集成测试"><span class="toc-number">3.2.</span> <span class="toc-text">API 集成测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PostMan-测试"><span class="toc-number">3.3.</span> <span class="toc-text">PostMan 测试</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#文档"><span class="toc-number">4.</span> <span class="toc-text">文档</span></a></li></ol></div></div><div class="post-content"><p>本文主要专注于 App 的后端 API 服务器开发。 编写主要关于RESTFul，OAuth 流程，Fractal，Transformer，API 图片上传，JWT 概念及使用 和 API 开发相关的知识。</p>
+<a id="more"></a>
+<h1 id="RESTful"><a href="#RESTful" class="headerlink" title="RESTful"></a>RESTful</h1><h2 id="什么是RESTful"><a href="#什么是RESTful" class="headerlink" title="什么是RESTful"></a>什么是RESTful</h2><blockquote>
+<p>RESTful 是一种软件设计风格，由 Roy Fielding 在他的 论文 中提出，全称为 Representational State Transfer，直译为表现层状态转移，或许可以解释为用 URL 定位资源，用 HTTP 动词描述操作</p>
+</blockquote>
+<h2 id="为什么选择RESTful"><a href="#为什么选择RESTful" class="headerlink" title="为什么选择RESTful"></a>为什么选择RESTful</h2><ul>
+<li>安全可靠，高效，易扩展。</li>
+<li>简单明了，可读性强，没有歧义。</li>
+<li>API 风格统一，调用规则，传入参数和返回数据有统一的标准</li>
+</ul>
+<h2 id="RESTful-设计原则"><a href="#RESTful-设计原则" class="headerlink" title="RESTful 设计原则"></a>RESTful 设计原则</h2><h3 id="HTTPS"><a href="#HTTPS" class="headerlink" title="HTTPS"></a>HTTPS</h3><p>HTTPS 为接口的安全提供了保障，可以有效防止通信被窃听和篡改</p>
+<h3 id="域名"><a href="#域名" class="headerlink" title="域名"></a>域名</h3><p>应当尽可能的将 API 与其主域名区分开，可以使用专用的域名或者可以放在主域名下，访问我们的 API，可以采取</p>
+<pre><code>https://api.domain.com
+
+或者
+
+https://www.domain.com/api
+</code></pre><h3 id="版本控制"><a href="#版本控制" class="headerlink" title="版本控制"></a>版本控制</h3><p>随着业务的发展，需求的不断变化，API 的迭代是必然的，很可能当前版本正在使用，而我们就得开发甚至上线一个不兼容的新版本，为了让旧用户可以正常使用，为了保证开发的顺利进行，我们需要控制好 API 的版本。<br>可以采取：</p>
+<ul>
+<li><p>将版本号直接加入 URL 中</p>
+<p>  <a href="https://api.domain.com/v1" target="_blank" rel="noopener">https://api.domain.com/v1</a><br>  <a href="https://api.domain.com/v2" target="_blank" rel="noopener">https://api.domain.com/v2</a></p>
+</li>
+<li><p>使用 HTTP 请求头的 Accept 字段进行区分</p>
+<p>  <a href="https://api.domain.com/" target="_blank" rel="noopener">https://api.domain.com/</a></p>
+<pre><code>Accept: application/prs.domain.v1+json
+Accept: application/prs.domain.v2+json
+</code></pre></li>
+</ul>
+<h3 id="用URL-定位资源"><a href="#用URL-定位资源" class="headerlink" title="用URL 定位资源"></a>用URL 定位资源</h3><p>在 RESTful 的架构中，所有的一切都表示资源，每一个 URL 都代表着一种资源，资源应当是一个名词，而且大部分情况下是名词的复数，尽量不要在 URL 中出现动词</p>
+<p>如github的设计</p>
+<pre><code>GET /issues                                      列出所有的 issue
+GET /orgs/:org/issues                            列出某个项目的 issue
+GET /repos/:owner/:repo/issues/:number           获取某个项目的某个 issue
+POST /repos/:owner/:repo/issues                  为某个项目创建 issue
+PATCH /repos/:owner/:repo/issues/:number         修改某个 issue
+PUT /repos/:owner/:repo/issues/:number/lock      锁住某个 issue
+DELETE /repos/:owner/:repo/issues/:number/lock   接收某个 issue
+</code></pre><h3 id="用HTTP-动词描述操作"><a href="#用HTTP-动词描述操作" class="headerlink" title="用HTTP 动词描述操作"></a>用HTTP 动词描述操作</h3><p>HTTP 设计了很多动词，来表示不同的操作，RESTful 很好的利用的这一点，我们需要正确的使用 HTTP 动词，来表明我们要如何操作资源。<br>幂等性：指一次和多次请求某一个资源应该具有同样的副作用，也就是一次访问与多次访问，对这个资源带来的变化是相同的。</p>
+<h3 id="资源过滤"><a href="#资源过滤" class="headerlink" title="资源过滤"></a>资源过滤</h3><p>我们需要提供合理的参数供客户端过滤资源，例如</p>
+<pre><code>?state=closed: 不同状态的资源
+?page=2&amp;per_page=100：访问第几页数据，每页多少条。
+?sortby=name&amp;order=asc：指定返回结果按照哪个属性排序，以及排序顺序。
+</code></pre><h3 id="正确使用状态码"><a href="#正确使用状态码" class="headerlink" title="正确使用状态码"></a>正确使用状态码</h3><pre><code>HTTP 提供了丰富的状态码供我们使用，正确的使用状态码可以让响应数据更具可读性。
+
+200 OK - 对成功的 GET、PUT、PATCH 或 DELETE 操作进行响应。也可以被用在不创建新资源的 POST 操作上
+201 Created - 对创建新资源的 POST 操作进行响应。应该带着指向新资源地址的 Location 头
+202 Accepted - 服务器接受了请求，但是还未处理，响应中应该包含相应的指示信息，告诉客户端该去哪里查询关于本次请求的信息
+204 No Content - 对不会返回响应体的成功请求进行响应（比如 DELETE 请求）
+304 Not Modified - HTTP缓存header生效的时候用
+400 Bad Request - 请求异常，比如请求中的body无法解析
+401 Unauthorized - 没有进行认证或者认证非法
+403 Forbidden - 服务器已经理解请求，但是拒绝执行它
+404 Not Found - 请求一个不存在的资源
+405 Method Not Allowed - 所请求的 HTTP 方法不允许当前认证用户访问
+410 Gone - 表示当前请求的资源不再可用。当调用老版本 API 的时候很有用
+415 Unsupported Media Type - 如果请求中的内容类型是错误的
+422 Unprocessable Entity - 用来表示校验错误
+429 Too Many Requests - 由于请求频次达到上限而被拒绝访问
+</code></pre><h3 id="数据响应格式"><a href="#数据响应格式" class="headerlink" title="数据响应格式"></a>数据响应格式</h3><p>考虑到响应数据的可读性及通用性，默认使用 JSON 作为数据响应格式。如果客户端有需求使用其他的响应格式，例如 XML，需要在 Accept 头中指定需要的格式</p>
+<pre><code>https://api.domain.com/
+    Accept: application/prs.domain.v1+json
+    Accept: application/prs.domain.v1+xml
+</code></pre><h3 id="对于错误的数据，可参考如下结构"><a href="#对于错误的数据，可参考如下结构" class="headerlink" title="对于错误的数据，可参考如下结构"></a>对于错误的数据，可参考如下结构</h3><pre><code>&apos;message&apos; =&gt; &apos;:message&apos;,          // 错误的具体描述
+&apos;errors&apos; =&gt; &apos;:errors&apos;,            // 参数的具体错误描述，422 等状态提供
+&apos;code&apos; =&gt; &apos;:code&apos;,                // 自定义的异常码
+&apos;status_code&apos; =&gt; &apos;:status_code&apos;,  // http状态码
+&apos;debug&apos; =&gt; &apos;:debug&apos;,              // debug 信息，非生产环境提供
+</code></pre><h3 id="调用频率限制"><a href="#调用频率限制" class="headerlink" title="调用频率限制"></a>调用频率限制</h3><p>为了防止服务器被攻击，减少服务器压力，需要对接口进行合适的限流控制，需要在响应头信息中加入合适的信息，告知客户端当前的限流情况</p>
+<ul>
+<li>X-RateLimit-Limit :100 最大访问次数</li>
+<li>X-RateLimit-Remaining :93 剩余的访问次数</li>
+<li>X-RateLimit-Reset :1513784506 到该时间点，访问次数会重置为 X-RateLimit-Limit</li>
+</ul>
+<h3 id="编写文档"><a href="#编写文档" class="headerlink" title="编写文档"></a>编写文档</h3><p>为了方便用户使用，我们需要提供清晰的文档，尽可能包括以下几点</p>
+<ul>
+<li>包括每个接口的请求参数，每个参数的类型限制，是否必填，可选的值等。</li>
+<li>响应结果的例子说明，包括响应结果中，每个参数的释义。</li>
+<li>对于某一类接口，需要有尽量详细的文字说明，比如针对一些特定场景，接口应该如何调用</li>
+</ul>
+<h1 id="DingoAPI"><a href="#DingoAPI" class="headerlink" title="DingoAPI"></a>DingoAPI</h1><p>dingo/api 是一个 Lumen 和 Laravel 都可用的 RestFul 工具包，帮助我们快速的开始构建 RestFul Api</p>
+<p>中文文档参考这个<a href="https://laravel-china.org/docs/dingo-api/2.0.0" target="_blank" rel="noopener">Dingo API 2.0.0 中文文档</a></p>
+<h2 id="响应"><a href="#响应" class="headerlink" title="响应"></a>响应</h2><p><a href="https://laravel-china.org/docs/dingo-api/2.0.0/Responses/1446" target="_blank" rel="noopener">Dingo数据响应设置</a></p>
+<h2 id="异常处理"><a href="#异常处理" class="headerlink" title="异常处理"></a>异常处理</h2><p><a href="https://laravel-china.org/docs/dingo-api/2.0.0/Errors-And-Error-Responses/1447" target="_blank" rel="noopener">错误异常和错误响应</a></p>
+<h2 id="Transformers"><a href="#Transformers" class="headerlink" title="Transformers"></a>Transformers</h2><p><a href="https://laravel-china.org/docs/dingo-api/2.0.0/Transformers/1448" target="_blank" rel="noopener">将对象转换为一个数组</a></p>
+<h2 id="api认证"><a href="#api认证" class="headerlink" title="api认证"></a>api认证</h2><p><a href="https://github.com/tymondesigns/jwt-auth" target="_blank" rel="noopener">JWT-AUTH</a></p>
+<p>一般来说都是用JWT,JWT 是 JSON Web Token 的缩写，是一个非常轻巧的规范，这个规范允许我们使用 JWT 在用户和服务器之间传递安全可靠的信息。</p>
+<p>JWT 由头部（header）、载荷（payload）与签名（signature）组成，一个 JWT 类似下面这样：</p>
+<pre><code>{
+    &quot;typ&quot;:&quot;JWT&quot;,
+    &quot;alg&quot;:&quot;HS256&quot;
+}
+{
+    &quot;iss&quot;:&quot;http://larabbs.test&quot;,
+    &quot;iat&quot;:1515733500,
+    &quot;exp&quot;:1515737100,
+    &quot;nbf&quot;:1515733500,
+    &quot;jti&quot;:&quot;c3U4VevxG2ZA1qhT&quot;,
+    &quot;sub&quot;:1,
+    &quot;prv&quot;:&quot;23bd5c8949f600adb39e701c400872db7a5976f7&quot;
+}
+signature
+</code></pre><ul>
+<li>头部申明了加密算法；</li>
+<li>载荷中有两个比较重要的数据，exp 是过期时间，sub 是 JWT 的主体，这里就是用户的 id；</li>
+<li>最后的 signature 是由服务器进行的签名，保证了 token 不被篡改。</li>
+</ul>
+<blockquote>
+<p>JWT 最后是通过 Base64 编码的，也就是说，它可以被翻译回原来的样子来的。所以不要在 JWT 中存放一些敏感信息。</p>
+</blockquote>
+<p>用户 id，过期时间等数据都保存在 Token 中了，所以并不需要将 Token 保存在服务器中，客户端请求的时候在 Header 中携带 Token，服务器获取 Token后，进行 base64_decode 即可获取数据进行校验，由于已经有了签名，所以不用担心数据被篡改。</p>
+<h3 id="Token-验证"><a href="#Token-验证" class="headerlink" title="Token 验证"></a>Token 验证</h3><p>有了 token 之后该如何验证 token 的有效性，并得到 token 对应的用户呢？其实原理很简单，DingoApi 为我们准备好了 api.auth 这个中间件</p>
+<ul>
+<li>获取客户端提交的 token</li>
+<li>检测 token 中的签名 signature 是否正确</li>
+<li>判断 payload 数据中的 exp，是否已经过期</li>
+<li>根据 payload 数据中的 sub，取数据库中验证用户是否存在</li>
+<li>上述检测不正确，则抛出相应异常</li>
+</ul>
+<h2 id="Include机制"><a href="#Include机制" class="headerlink" title="Include机制"></a>Include机制</h2><p>如何获取相关连的数据也是我们应该关心的问题</p>
+<ul>
+<li>如何获取额外的资源数据？</li>
+<li>资源数据该以什么样的结构返回？<br>其实 DingoApi 已经很好的解决了这两个问题。修改下Transformer</li>
+</ul>
+<p>如下代码所示：</p>
+<p>其实 DingoApi 已经很好的解决了这两个问题。</p>
+<pre><code>protected $availableIncludes = [&apos;user&apos;, &apos;category&apos;];
+
+    public function transform(Topic $topic)
+    {
+        return [
+            &apos;id&apos; =&gt; $topic-&gt;id,
+            &apos;title&apos; =&gt; $topic-&gt;title,
+            &apos;body&apos; =&gt; $topic-&gt;body,
+            &apos;user_id&apos; =&gt; $topic-&gt;user_id,
+            &apos;category_id&apos; =&gt; $topic-&gt;category_id,
+            &apos;reply_count&apos; =&gt; $topic-&gt;reply_count,
+            &apos;view_count&apos; =&gt; $topic-&gt;view_count,
+            &apos;last_reply_user_id&apos; =&gt; $topic-&gt;last_reply_user_id,
+            &apos;excerpt&apos; =&gt; $topic-&gt;excerpt,
+            &apos;slug&apos; =&gt; $topic-&gt;slug,
+            &apos;created_at&apos; =&gt; $topic-&gt;created_at-&gt;toDateTimeString(),
+            &apos;updated_at&apos; =&gt; $topic-&gt;updated_at-&gt;toDateTimeString(),
+        ];
+    }
+
+    public function includeUser(Topic $topic)
+    {
+        return $this-&gt;item($topic-&gt;user, new UserTransformer());
+    }
+
+    public function includeCategory(Topic $topic)
+    {
+        return $this-&gt;item($topic-&gt;category, new CategoryTransformer());
+    }
+</code></pre><h1 id="自动化测试"><a href="#自动化测试" class="headerlink" title="自动化测试"></a>自动化测试</h1><p>在开发过程中，我们使用 PostMan 手动一个个接口测试，可当我们有几十个甚至上百个接口时，要同时测试这些接口，手动测试将无法适用。解决方案是自动化测试，自动化测试是保证项目质量的重要环节，这一节我们来了解一下测试的相关概念。</p>
+<h2 id="单元测试"><a href="#单元测试" class="headerlink" title="单元测试"></a>单元测试</h2><p>单元测试是指对软件中的最小可测试单元进行检查和验证，对于 PHP 来说通常情况下是对某个类中的 某个方法，或者单独的某个方法进行测试。单元测试的目的是首先保证一个系统的 基本组成单元 能正常工作，所有基础零件工作正常了，组装出来的软件才不会出问题。</p>
+<p>单元测试是 代码级别 的测试，开发和维护成本都很高，不建议小团队使用。如果是多人协作，我的任务是单独的封装一些通用功能，譬如写个 Service；或者编写一个扩展包，提供一些底层的代码接口，譬如为某个第三方应用封装 SDK，那么单元测试非常有必要。</p>
+<h2 id="API-集成测试"><a href="#API-集成测试" class="headerlink" title="API 集成测试"></a>API 集成测试</h2><p>Laravel 框架自带的集成 API 测试，见 <a href="https://laravel-china.org/docs/laravel/5.5/http-tests/1339#testing-json-apis" target="_blank" rel="noopener">文档</a>，我们初始化完整的应用程序上下文，准备好数据库中的测试数据后，就可以方便的模拟各种请求方式，调用接口获取响应结果，最终 断言 返回的结果是否等于预期结果。</p>
+<p>API 集成测试 需要准备测试数据，需要设置用户，分配用户权限，为测试接口准备好相关联的数据。虽然有一定得维护成本，但是相比单元测试，维护成本要少很多，在一定程度上更能够保证项目的健壮性。</p>
+<h2 id="PostMan-测试"><a href="#PostMan-测试" class="headerlink" title="PostMan 测试"></a>PostMan 测试</h2><p>使用 PostMan 等工具进行手动测试，这种是最推崇的测试方案，非常适合小团队使用，因为可以比较真实地模拟用户请求，并且团队协作中，后端工程师可以将 PostMan 的调试接口分享给客户端工程师，接口是否有问题客户端工程师可以自行测试。</p>
+<h1 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h1><ul>
+<li><a href="https://swagger.io/" target="_blank" rel="noopener">swagger</a></li>
+<li><a href="http://apidocjs.com/" target="_blank" rel="noopener">APIdoc</a></li>
+<li><a href="https://apizza.net/" target="_blank" rel="noopener">apizza</a>(可以导入postman导出的文件)</li>
+</ul>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/2018/08/16/redis线程IO模型/">Redis线程IO模型</a><a class="next" href="/2018/08/15/redis应用3-限流策略/">Redis应用3--限流策略</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://blog.xhzyxed.cn"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Nginx/">Nginx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/http/">http</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/javascript/">javascript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/memcached/">memcached</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/mysql/">mysql</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/php/">php</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/vuejs/">vuejs</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/web安全/">web安全</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/前端构建工具/">前端构建工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/推文/">推文</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/项目/">项目</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之进程管理/">Linux学习之进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之服务与进程管理/">Linux学习之服务与进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之crontab定时任务/">Linux学习之crontab定时任务</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之文本编辑器/">Linux学习之文本编辑器</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/10/Nginx优化篇/">Nginx优化篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/php底层原理学习/">php底层原理学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Linux学习之bash-shell/">Linux学习之bash_shell</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Nginx应用篇/">Nginx应用篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/08/Nginx基础篇/">Nginx基础篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/07/memcached学习笔记/">memcached学习笔记</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://org.xhzyxed.cn/" title="小猴子与小耳朵" target="_blank">小猴子与小耳朵</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">其斤.匕禾页.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="努力，奋斗！"><title>websocket+workerman实现聊天室 | 其斤.匕禾页</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/8.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">websocket+workerman实现聊天室</h1><a id="logo" href="/.">其斤.匕禾页</a><p class="description">永远相信美好的事情即将发生</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="https://www.xhzyxed.cn/"><i class="fa fa-user"> 关于</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">websocket+workerman实现聊天室</h1><div class="post-meta">Dec 11, 2017<span> | </span><span class="category"><a href="/categories/php/">php</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#简易聊天室"><span class="toc-number">1.</span> <span class="toc-text">简易聊天室</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#效果图如下所示"><span class="toc-number">1.1.</span> <span class="toc-text">效果图如下所示:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#客户端代码如下所示"><span class="toc-number">1.2.</span> <span class="toc-text">客户端代码如下所示:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#服务端代码如下所示："><span class="toc-number">1.3.</span> <span class="toc-text">服务端代码如下所示：</span></a></li></ol></li></ol></div></div><div class="post-content"><p>websocket+workerman实现聊天室<br><a id="more"></a></p>
+<h1 id="简易聊天室"><a href="#简易聊天室" class="headerlink" title="简易聊天室"></a>简易聊天室</h1><p>在之前的文章当中websocket和php socket我们都学习了，基本原理也已经摸清楚了，接下来，我们可以使用php的一个socket框架写一个简单的聊天室。<br>功能主要有：</p>
+<ul>
+<li>使用昵称登陆到聊天室中</li>
+<li>同步聊天室的在线用户列表</li>
+<li>点对点发送消息</li>
+</ul>
+<h2 id="效果图如下所示"><a href="#效果图如下所示" class="headerlink" title="效果图如下所示:"></a>效果图如下所示:</h2><p><img src="task.gif" alt=""></p>
+<h2 id="客户端代码如下所示"><a href="#客户端代码如下所示" class="headerlink" title="客户端代码如下所示:"></a>客户端代码如下所示:</h2><pre><code class="bash">&lt;!DOCTYPE html&gt;
+&lt;html lang=<span class="string">"en"</span>&gt;
+&lt;head&gt;
+    &lt;!-- 最新版本的 Bootstrap 核心 CSS 文件 --&gt;
+    &lt;link rel=<span class="string">"stylesheet"</span> href=<span class="string">"https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css"</span>
+          integrity=<span class="string">"sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"</span> crossorigin=<span class="string">"anonymous"</span>&gt;
+    &lt;!-- 最新的 Bootstrap 核心 JavaScript 文件 --&gt;
+    &lt;script src=<span class="string">"https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"</span>
+            integrity=<span class="string">"sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"</span>
+            crossorigin=<span class="string">"anonymous"</span>&gt;&lt;/script&gt;
+    &lt;meta charset=<span class="string">"UTF-8"</span>&gt;
+    &lt;title&gt;Title&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+
+&lt;div class=<span class="string">"container"</span>&gt;
+    &lt;div class=<span class="string">"header clearfix"</span>&gt;
+        &lt;h3 class=<span class="string">"text-muted"</span>&gt;我的月亮你的心&lt;/h3&gt;
+    &lt;/div&gt;
+
+    &lt;div class=<span class="string">"jumbotron"</span>&gt;
+        &lt;div id=<span class="string">"txtcontent"</span> style=<span class="string">"width:auto;height:250px;border: solid 1px white"</span>&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=<span class="string">"row marketing"</span>&gt;
+
+        &lt;div class=<span class="string">"col-lg-8"</span>&gt;
+            &lt;div&gt;
+                &lt;div class=<span class="string">"form-group"</span>&gt;
+                    &lt;label&gt;所有用户:&lt;/label&gt;
+                    &lt;select id=<span class="string">"listusers"</span>&gt;&lt;/select&gt;
+                &lt;/div&gt;
+                &lt;div class=<span class="string">"form-group"</span>&gt;
+                    &lt;label&gt;你的昵称:&lt;/label&gt;
+                    &lt;input <span class="built_in">type</span>=<span class="string">"text"</span> id=<span class="string">"username"</span>/&gt;
+                &lt;/div&gt;
+                &lt;div class=<span class="string">"form-group"</span>&gt;
+                    &lt;label <span class="keyword">for</span>=<span class="string">"exampleInputFile"</span>&gt;消息内容:&lt;/label&gt;
+                    &lt;textarea style=<span class="string">"width:500px;height:100px"</span> id=<span class="string">"txtmsg"</span>&gt;&lt;/textarea&gt;
+                &lt;/div&gt;
+                &lt;button onclick=<span class="string">"connectServer()"</span> class=<span class="string">"btn btn-default"</span>&gt;连接服务器&lt;/button&gt;
+                &lt;button onclick=<span class="string">"send()"</span> class=<span class="string">"btn btn-default"</span>&gt;发送消息&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt; &lt;!-- /container --&gt;
+
+
+&lt;script&gt;
+    // 创建一个Socket实例
+    var socket = null;//初始是null
+    var isLogin = <span class="literal">false</span>;//是否登录到服务器上
+
+    <span class="keyword">function</span> <span class="function"><span class="title">send</span></span>() {
+        <span class="keyword">if</span> (!isLogin) {
+            alert(<span class="string">"请先服务器验证"</span>);
+            <span class="built_in">return</span>;
+        }
+        var msg = document.getElementById(<span class="string">"txtmsg"</span>).value;
+        var listusers = document.getElementById(<span class="string">"listusers"</span>);
+        var toUserIP = listusers.options[listusers.selectedIndex].value;//发给用户的IP和端口 ，
+        var toUserName = listusers.options[listusers.selectedIndex].text;//发给用户的 昵称
+        socket.send(<span class="string">"chat:&lt;"</span> + toUserIP + <span class="string">"&gt;:"</span> + msg);
+        //chat:&lt;192.168.1.10:56002&gt;:xxxxoo&gt;
+        //在div 中显示我们的行为
+        var p = document.createElement(<span class="string">"P"</span>);
+        p.innerHTML = <span class="string">"&lt;span&gt;发送消息给["</span> + toUserName + <span class="string">"]&lt;/span&gt;"</span> + msg;
+        document.getElementById(<span class="string">"txtcontent"</span>).appendChild(p)
+    }
+    <span class="keyword">function</span> <span class="function"><span class="title">connectServer</span></span>() {
+        var userName = document.getElementById(<span class="string">"username"</span>).value;
+        <span class="keyword">if</span> (userName == <span class="string">""</span>) {
+            alert(<span class="string">"用户昵称必填 "</span>);
+            <span class="built_in">return</span>;
+        }
+        socket = new WebSocket(<span class="string">'ws://192.168.164.134:9091/'</span>);
+        // 打开Socket
+        socket.onopen = <span class="keyword">function</span> (event) {
+            socket.send(<span class="string">"login:"</span> + userName);
+        };
+        socket.onmessage = <span class="keyword">function</span> (event) {
+            var getMsg = event.data;
+            <span class="keyword">if</span> (/^notice:success$/.<span class="built_in">test</span>(getMsg)) //服务器验证通过,后面做任何发送操作
+            {
+                isLogin = <span class="literal">true</span>;
+            }
+            <span class="keyword">else</span> <span class="keyword">if</span> (/^msg:/.<span class="built_in">test</span>(getMsg)) //代表是普通消息
+            {
+                //&lt;p&gt;xxxxooo&lt;/p&gt;
+                var p = document.createElement(<span class="string">"P"</span>);
+                p.innerHTML = <span class="string">"&lt;span&gt;收到消息&lt;/span&gt;"</span> + getMsg.replace(<span class="string">"msg:"</span>, <span class="string">""</span>);
+                document.getElementById(<span class="string">"txtcontent"</span>).appendChild(p);
+            } <span class="keyword">else</span> <span class="keyword">if</span> (/^users:/.<span class="built_in">test</span>(getMsg)) { //显示当前已登录用户
+                getMsg = getMsg.replace(<span class="string">'users:'</span>, <span class="string">''</span>);
+                getMsg = <span class="built_in">eval</span>(<span class="string">'('</span> + getMsg + <span class="string">')'</span>); //转json
+                console.log(getMsg);
+                var listusers = document.getElementById(<span class="string">'listusers'</span>);
+                listusers.innerHTML = <span class="string">''</span>;//清空
+                <span class="keyword">for</span> (var key <span class="keyword">in</span> getMsg) {
+                    console.log(key);
+                    var option = document.createElement(<span class="string">'option'</span>);
+                    option.value = key; //ip
+                    option.innerHTML = getMsg[key]; //昵称
+                    listusers.appendChild(option); //添加元素进去
+                }
+            }
+            <span class="keyword">else</span> {
+
+            }
+        };
+        // 监听Socket的关闭
+        socket.onclose = <span class="keyword">function</span> (event) {
+            isLogin = <span class="literal">false</span>;
+
+        };
+    }
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+
+</code></pre>
+<h2 id="服务端代码如下所示："><a href="#服务端代码如下所示：" class="headerlink" title="服务端代码如下所示："></a>服务端代码如下所示：</h2><p>（这是写在依赖wokerman写的服务端文件）</p>
+<pre><code class="bash">
+&lt;?php
+require  __DIR__ . <span class="string">'/Workerman/Autoloader.php'</span>;
+use Workerman\Worker;
+use Workerman\Connection\AsyncTcpConnection;
+
+<span class="variable">$tcp_worker</span> = new Worker(<span class="string">"websocket://192.168.164.134:9091"</span>);
+
+<span class="variable">$tcp_worker</span>-&gt;count = 1;
+<span class="variable">$clients</span>=[];//保存客户端信息
+
+<span class="keyword">function</span> syncUsers()
+{
+    global <span class="variable">$clients</span>;
+    <span class="variable">$users</span> = <span class="string">'users:'</span>.json_encode(array_column(<span class="variable">$clients</span>,<span class="string">'name'</span>,<span class="string">'ipp'</span>));
+    foreach (<span class="variable">$clients</span> as <span class="variable">$ip</span>=&gt;<span class="variable">$client</span>){
+        <span class="variable">$client</span>[<span class="string">'conn'</span>]-&gt;send(<span class="variable">$users</span>);
+    }
+}
+
+<span class="variable">$tcp_worker</span>-&gt;onMessage = <span class="keyword">function</span>(<span class="variable">$connection</span>, <span class="variable">$data</span>)
+{
+    global <span class="variable">$clients</span>;
+    <span class="variable">$ip</span> = <span class="variable">$connection</span>-&gt;getRemoteIp();
+    <span class="variable">$port</span> = <span class="variable">$connection</span>-&gt;getRemotePort();
+    <span class="keyword">if</span>(preg_match(<span class="string">"/^login:(\w{3,20})/i"</span>,<span class="variable">$data</span>,<span class="variable">$result</span>))//代表是客户端认证
+    {
+        <span class="keyword">if</span>(!array_key_exists(<span class="variable">$ip</span>.<span class="string">":"</span>.<span class="variable">$port</span>,<span class="variable">$clients</span>)) //必须是之前没有记录过
+        {
+            <span class="variable">$clients</span>[<span class="variable">$ip</span>.<span class="string">":"</span>.<span class="variable">$port</span>]=[<span class="string">'ipp'</span>=&gt;<span class="variable">$ip</span>.<span class="string">":"</span>.<span class="variable">$port</span>,<span class="string">'name'</span>=&gt;<span class="variable">$result</span>[1],<span class="string">'conn'</span>=&gt;<span class="variable">$connection</span>];
+            <span class="variable">$connection</span>-&gt;send(<span class="string">"notice:success"</span>);//
+            <span class="variable">$connection</span>-&gt;send(<span class="string">"msg:welcome back "</span>.<span class="variable">$result</span>[1]);
+            <span class="built_in">echo</span> <span class="variable">$connection</span>-&gt;getRemoteIp().<span class="string">":"</span>.<span class="variable">$result</span>[1].<span class="string">" login"</span>.PHP_EOL;
+
+            //一旦有用户登录就把保存的客户端信息发送过去
+            syncUsers();
+
+        }
+
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span>(preg_match(<span class="string">"/^msg:(.*?)/isU"</span>,<span class="variable">$data</span>,<span class="variable">$msgset</span>)) //代表 是客户端发送普通消息
+    {
+        <span class="keyword">if</span>(array_key_exists(<span class="variable">$connection</span>-&gt;getRemoteIp(),<span class="variable">$clients</span>)) //必须已经认证过得客户端
+        {
+            <span class="built_in">echo</span> <span class="string">"get msg :"</span>.<span class="variable">$msgset</span>[1];
+        }
+    }<span class="keyword">else</span> <span class="keyword">if</span>(preg_match(<span class="string">"/^chat:\&lt;(.*?)\&gt;:(.*?)/isU"</span>,<span class="variable">$data</span>,<span class="variable">$msgset</span>))
+    {
+        <span class="variable">$ipp</span>=<span class="variable">$msgset</span>[1];
+        <span class="built_in">echo</span> <span class="variable">$ipp</span>;
+        <span class="variable">$msg</span>=<span class="variable">$msgset</span>[2];
+        <span class="keyword">if</span>(array_key_exists(<span class="variable">$ipp</span>,<span class="variable">$clients</span>))
+        {
+            <span class="variable">$clients</span>[<span class="variable">$ipp</span>][<span class="string">"conn"</span>]-&gt;send(<span class="string">"msg:"</span>.<span class="variable">$msg</span>);
+        }
+    }
+    <span class="variable">$connection</span>-&gt;onClose=<span class="keyword">function</span> (<span class="variable">$connection</span>)//客户端主动关闭
+    {
+        global <span class="variable">$clients</span>;
+        <span class="built_in">unset</span>(<span class="variable">$clients</span>[<span class="variable">$connection</span>-&gt;getRemoteIp().<span class="string">":"</span>.<span class="variable">$connection</span>-&gt;getRemotePort()]);
+        syncUsers();
+    };
+};
+<span class="variable">$tcp_worker</span>-&gt;onClose=<span class="keyword">function</span> (<span class="variable">$connection</span>) use(<span class="variable">$clients</span>)
+{
+
+};
+
+
+// 运行worker
+Worker::runAll();
+</code></pre>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/2017/12/12/docker的安装，下载阿里云镜像，运行外部php容器/">docker的安装，下载阿里云镜像，运行外部php容器</a><a class="next" href="/2017/12/11/ActiveMq安装以及使用php第三方stomp来操作ActiveMQ/">ActiveMq安装以及使用php第三方stomp来操作ActiveMQ</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://blog.xhzyxed.cn"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Nginx/">Nginx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/http/">http</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/javascript/">javascript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/memcached/">memcached</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/mysql/">mysql</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/php/">php</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/vuejs/">vuejs</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/web安全/">web安全</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/前端构建工具/">前端构建工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/推文/">推文</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/项目/">项目</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之进程管理/">Linux学习之进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之服务与进程管理/">Linux学习之服务与进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之crontab定时任务/">Linux学习之crontab定时任务</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之文本编辑器/">Linux学习之文本编辑器</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/10/Nginx优化篇/">Nginx优化篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/php底层原理学习/">php底层原理学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Linux学习之bash-shell/">Linux学习之bash_shell</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Nginx应用篇/">Nginx应用篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/08/Nginx基础篇/">Nginx基础篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/07/memcached学习笔记/">memcached学习笔记</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://org.xhzyxed.cn/" title="小猴子与小耳朵" target="_blank">小猴子与小耳朵</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">其斤.匕禾页.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>

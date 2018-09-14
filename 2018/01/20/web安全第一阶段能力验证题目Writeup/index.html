@@ -1,0 +1,114 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="努力，奋斗！"><title>web安全第一阶段能力验证题目Writeup | 其斤.匕禾页</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/8.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">web安全第一阶段能力验证题目Writeup</h1><a id="logo" href="/.">其斤.匕禾页</a><p class="description">永远相信美好的事情即将发生</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="https://www.xhzyxed.cn/"><i class="fa fa-user"> 关于</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">web安全第一阶段能力验证题目Writeup</h1><div class="post-meta">Jan 20, 2018<span> | </span><span class="category"><a href="/categories/web安全/">web安全</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">1.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="post-content"><p>做web开发肯定对于web安全需要有一定的理解与基础，以下是学完基础的小作业，记录下过程。<br><a id="more"></a></p>
+<blockquote>
+<p><a href="http://120.24.86.145:8002/web2/" target="_blank" rel="noopener">http://120.24.86.145:8002/web2/</a></p>
+</blockquote>
+<p>打开之后网页发现没表单什么的，这时候就想起应该要查看源码或者抓个包分析一下了<br>打开源码之后发现果然有flag<br><img src="01.png" alt=""></p>
+<p>难度：1星 知识点：页面源码查看</p>
+<blockquote>
+<p><a href="http://120.24.86.145:8002/yanzhengma/" target="_blank" rel="noopener">http://120.24.86.145:8002/yanzhengma/</a></p>
+</blockquote>
+<p>题目是一个验证码计算，发现写入结果是长度被限制了，我们修改html表单input的maxlength限制就可以了</p>
+<pre><code>&lt;input type=&quot;text&quot; class=&quot;input&quot; maxlength=&quot;4&quot;&gt;
+</code></pre><p>难度：1星 知识点：JavaScript代码绕过</p>
+<blockquote>
+<p><a href="http://120.24.86.145:8002/get/" target="_blank" rel="noopener">http://120.24.86.145:8002/get/</a></p>
+</blockquote>
+<p>根据提示</p>
+<pre><code>$what=$_GET[&apos;what&apos;];
+echo $what;
+if($what==&apos;flag&apos;)
+echo &apos;flag{****}&apos;;
+</code></pre><p>接受到一个key为what，value为flag的参数就可以抓到flag了<br>因为是get请求，所以我们在url后面加上?what=flag就行了<br><a href="http://120.24.86.145:8002/get?what=flag" target="_blank" rel="noopener">http://120.24.86.145:8002/get?what=flag</a></p>
+<p>难度：1星 知识点：GET参数提交</p>
+<blockquote>
+<p><a href="http://120.24.86.145:8002/post/" target="_blank" rel="noopener">http://120.24.86.145:8002/post/</a></p>
+</blockquote>
+<p>根据提示</p>
+<pre><code>$what=$_POST[&apos;what&apos;];
+&lt;br&gt;
+echo $what;
+&lt;br&gt;
+if($what==&apos;flag&apos;)
+&lt;br&gt;
+echo &apos;flag{****}&apos;;
+&lt;br&gt;
+</code></pre><p>我们这里使用postman来构造post提交，首先头部伪造很重要，刚开始我直接在body里面设置了what=flag，发现并没有效果，因此我们可以看chrome的network看法request header，并改造相似的请求头，勾选post请求，发送，抓到flag。<br><img src="041.png" alt=""><br><img src="04.png" alt=""><br>难度：1星 知识点：POST参数提交</p>
+<blockquote>
+<p><a href="http://120.24.86.145:8002/get/index1.php" target="_blank" rel="noopener">http://120.24.86.145:8002/get/index1.php</a></p>
+</blockquote>
+<p>根据提示</p>
+<pre><code>$num=$_GET[&apos;num&apos;];
+if(!is_numeric($num))
+{
+echo $num;
+if($num==1)
+echo &apos;flag{**********}&apos;;
+}
+</code></pre><p>从提示我们可以指导，get请求的参数必须满足两个条件</p>
+<ul>
+<li>不是数字</li>
+<li>值等于1</li>
+</ul>
+<p>根据php弱类型的特点我们可以知道，如果一个数值和字符串进行比较的时候，会将字符串转换成数值，根据php字符串转换成数字的规则<br>例如 “1a”转换成数字就是1，因此该题的解决方式是<a href="http://120.24.86.145:8002/get/index1.php?num=1a" target="_blank" rel="noopener">http://120.24.86.145:8002/get/index1.php?num=1a</a></p>
+<p>难度：1星 知识点：PHP弱类型</p>
+<blockquote>
+<p><a href="http://120.24.86.145:8002/web3/" target="_blank" rel="noopener">http://120.24.86.145:8002/web3/</a></p>
+</blockquote>
+<p>很调皮的一个页面，一直在弹窗，点击F12也无法查看源代码，这时候应该需要用到burpsuite进行抓包，这里使用了Repeater模块，将抓到的请求包发送到Repeater，对请求进行一步一步研究，如下如所示，<br><img src="06.png" alt=""><br>发现有一个有一些奇怪的符号，这个很明显涉及到编码问题，如果熟悉的人一眼就会看出其实这就是Unicode编码，我们可以直接把这个编码发送到Burpsuite的Decoder进行解码，也可以在线找unicode解码，直接只用Burpsuite最方便。</p>
+<p>难度：1星 知识点：查看页面源码、Unicode编码</p>
+<blockquote>
+<p><a href="http://ctf5.shiyanbar.com/basic/catch/" target="_blank" rel="noopener">http://ctf5.shiyanbar.com/basic/catch/</a></p>
+</blockquote>
+<p>有表单，提交密钥，第一感觉是要暴力破解呀，看了下源码之后，没什么思路，那就对请求过程进行抓包吧，使用Burpsuite的Repater对post过程进行一步一步跟踪，发现返回的值有一个编码，如下图:<br><img src="07.png" alt=""><br><img src="0701.png" alt=""><br>直接原样输入未解码的字符串即可过关。<br>难度：1星 知识点：抓包、base64编码</p>
+<blockquote>
+<p><a href="http://ctf5.shiyanbar.com/phpaudit/" target="_blank" rel="noopener">http://ctf5.shiyanbar.com/phpaudit/</a></p>
+</blockquote>
+<p>根据提示</p>
+<pre><code>&lt;?php
+function GetIP(){
+if(!empty($_SERVER[&quot;HTTP_CLIENT_IP&quot;]))
+    $cip = $_SERVER[&quot;HTTP_CLIENT_IP&quot;];
+else if(!empty($_SERVER[&quot;HTTP_X_FORWARDED_FOR&quot;]))
+    $cip = $_SERVER[&quot;HTTP_X_FORWARDED_FOR&quot;];
+else if(!empty($_SERVER[&quot;REMOTE_ADDR&quot;]))
+    $cip = $_SERVER[&quot;REMOTE_ADDR&quot;];
+else
+    $cip = &quot;0.0.0.0&quot;;
+return $cip;
+}
+
+$GetIPs = GetIP();
+if ($GetIPs==&quot;1.1.1.1&quot;){
+echo &quot;Great! Key is *********&quot;;
+}
+else{
+echo &quot;错误！你的IP不在访问列表之内！&quot;;
+}
+?&gt;
+</code></pre><p>从提示我们可以知道，我们伪造请求头的HTTP_CLIENT_IP或HTTP_X_FORWARDED_FOR或REMOTE_ADDR可以抓到flag<br>直接让上述的一个等于1.1.1.1就可以抓到flag了</p>
+<p>难度：1星 知识点：抓包、HTTP请求头伪造</p>
+<blockquote>
+<p><a href="http://ctf5.shiyanbar.com/sHeader/" target="_blank" rel="noopener">http://ctf5.shiyanbar.com/sHeader/</a></p>
+</blockquote>
+<p>根据提示可以知道:</p>
+<pre><code>You don&apos;t have permission to access / on this server.
+
+Please make sure you have installed .net framework 9.9!
+
+Make sure you are in the region of England and browsing this site with Internet Explorer
+</code></pre><p>要抓到flag必须满足一下几个条件</p>
+<ul>
+<li>.net framework版本9.9</li>
+<li>只接受英国区域以及it浏览器<br>直接使用burp拦截，查询相关资料可知修改useragent，修改user-agent为Mozilla/5.0 (MSIE 9.0;.NET CLR 9.9)<br>Accept-Language:en-gb可以解决，如下如图所示:</li>
+</ul>
+<p><img src="09.png" alt=""></p>
+<p>难度：1星 知识点：抓包、HTTP请求头伪造</p>
+<blockquote>
+<p><a href="http://ctf5.shiyanbar.com/DUTCTF/1.html" target="_blank" rel="noopener">http://ctf5.shiyanbar.com/DUTCTF/1.html</a></p>
+</blockquote>
+<p>刚访问的时候，发现，突然出现了一大串乱码，经常做爬虫的人肯定很熟悉这种数据格式，这是jsfuck，就是混效过后的js，在日常爬虫当中，一般都是用node进行大块解析运行，在这里，我们复制这一串代码到控制台就可以执行了，或者直接执行js脚本<br><img src="TI10.png" alt=""><br>难度：1星 知识点：jsfuck代码执行</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>Web攻击的本质，就是通过HTTP协议篡改应用程序</li>
+<li>burpsuite是一个很好的工具</li>
+</ul>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/2018/01/31/实验吧CTF题库-web安全Writeup/">实验吧CTF题库-web安全Writeup</a><a class="next" href="/2018/01/05/框架中插件机制的原理理解/">框架中插件机制的原理理解</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://blog.xhzyxed.cn"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Nginx/">Nginx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/http/">http</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/javascript/">javascript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/memcached/">memcached</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/mysql/">mysql</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/php/">php</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/vuejs/">vuejs</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/web安全/">web安全</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/前端构建工具/">前端构建工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/推文/">推文</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/项目/">项目</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之进程管理/">Linux学习之进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之服务与进程管理/">Linux学习之服务与进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之crontab定时任务/">Linux学习之crontab定时任务</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之文本编辑器/">Linux学习之文本编辑器</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/10/Nginx优化篇/">Nginx优化篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/php底层原理学习/">php底层原理学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Linux学习之bash-shell/">Linux学习之bash_shell</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Nginx应用篇/">Nginx应用篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/08/Nginx基础篇/">Nginx基础篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/07/memcached学习笔记/">memcached学习笔记</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://org.xhzyxed.cn/" title="小猴子与小耳朵" target="_blank">小猴子与小耳朵</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">其斤.匕禾页.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>

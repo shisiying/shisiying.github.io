@@ -1,0 +1,156 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="努力，奋斗！"><title>框架中插件机制的原理理解 | 其斤.匕禾页</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/8.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">框架中插件机制的原理理解</h1><a id="logo" href="/.">其斤.匕禾页</a><p class="description">永远相信美好的事情即将发生</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="https://www.xhzyxed.cn/"><i class="fa fa-user"> 关于</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">框架中插件机制的原理理解</h1><div class="post-meta">Jan 5, 2018<span> | </span><span class="category"><a href="/categories/php/">php</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#插件机制的理解"><span class="toc-number">1.</span> <span class="toc-text">插件机制的理解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#什么是插件"><span class="toc-number">1.1.</span> <span class="toc-text">什么是插件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#观察者模式"><span class="toc-number">1.2.</span> <span class="toc-text">观察者模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#注册事件与触发事件"><span class="toc-number">1.3.</span> <span class="toc-text">注册事件与触发事件</span></a></li></ol></li></ol></div></div><div class="post-content"><p>框架中插件机制的原理理解<br><a id="more"></a></p>
+<h2 id="插件机制的理解"><a href="#插件机制的理解" class="headerlink" title="插件机制的理解"></a>插件机制的理解</h2><p>最近回过头发现自己以前的写的笔记有点不太详细跟认真，也是刚毕业时的心态所致，凡事求快，遇速则不达，对于技术的学习还应该是脚踏实地的理解以及编码。<br>不过如果需要表达出的对原理的理解会让博客更加的丰富与逻辑的魅力，而不是单纯的记录下学习的过程的知识点，复盘才能够帮助我们更好地学习新知识，以及理解其原理。因此，以后的文章希望能够很好的查资料以及写出自己的理解。<br>今天要复盘的是插件机制的理解，插件机制使用了观察者模式和注册事件以及触发事件</p>
+<h3 id="什么是插件"><a href="#什么是插件" class="headerlink" title="什么是插件"></a>什么是插件</h3><p>什么是插件呢，以下是我觉得通俗易懂的解释：<br>插件是什么东西？打个比方，如果iWebShop是一个手机操作系统，插件就是APP。回到理论，插件是一种可以热插拔的（动态安装和卸载），可以实现一定功能性并且对目前现有运行系统不会产生任何影响的一种松散耦合的设计模式，而且易扩展，可以让更多的开发者参与进来，让产品自身的功能更加丰富彩，它也可以通过动态的安装组合，实现不同的产品架构。</p>
+<h3 id="观察者模式"><a href="#观察者模式" class="headerlink" title="观察者模式"></a>观察者模式</h3><p>在观察者模式中，有两个对象，一个是观察者，一个是被观察者，我们称之为主题。<br>在观察者模式中，会改变的是主题的状态以及观察者的数目。用这个模式，你可以改变依赖于主题状态的对象，却不必改变主题。——找出程序中会变化的方面，然后将其和固定不变的方面相分离!主题和观察者都使用接口:观察者利用主题的接口向主题注册，而主题利用观察者接口通知观察者。这样可以让两者之间运作正常，又同时具有松耦合的优点! ——针对接口编程，不针对实现编程!<br>。观察者模式利用“组合”将许多观察者组合进主题中。对象(观察者——主题)之间的这种关系不是通过继承产生的，而是在运行时利用组合的方式产生的。 ——多用组合，少用继承！</p>
+<pre><code class="bash">&lt;?php
+/**
+ * Created by PhpStorm.
+ * User: seven
+ * Date: 2018/1/5
+ * Time: 22:45
+ */
+//主题
+class Subject
+{
+    //保存观察者注册的实例
+    private <span class="variable">$_observers</span> = array();
+    //注册观察者
+    public <span class="keyword">function</span> reg(<span class="variable">$sub</span>)
+    {
+        <span class="variable">$this</span>-&gt;_observers[]=<span class="variable">$sub</span>;
+    }
+    //外部触发统一访问
+    public <span class="keyword">function</span> trigger()
+    {
+        <span class="keyword">if</span> (!empty(<span class="variable">$this</span>-&gt;_observers)){
+            foreach (<span class="variable">$this</span>-&gt;_observers as <span class="variable">$observer</span>){
+                //定义接口，限制每个观察者实现一个运行方法
+                <span class="variable">$observer</span>-&gt;submethod();
+            }
+        }
+    }
+}
+
+//观察实现的接口
+interface Observe
+{
+    public <span class="keyword">function</span> submethod();
+}
+
+class oberveplugin implements Observe{
+    public <span class="keyword">function</span> submethod()
+    {
+        <span class="built_in">echo</span> <span class="string">"hello world!"</span>;
+    }
+}
+
+//测试代码
+
+<span class="variable">$subject</span> = new Subject();
+<span class="variable">$subject</span>-&gt;reg(new oberveplugin());
+<span class="variable">$subject</span>-&gt;trigger();
+</code></pre>
+<h3 id="注册事件与触发事件"><a href="#注册事件与触发事件" class="headerlink" title="注册事件与触发事件"></a>注册事件与触发事件</h3><p>上面我们讲过要实现插件的话，还需要注册事件，让插件针对主题对象的发生不同事件，也就是不同的方法被调用做不通的处理，换句话说就是我们给插件取一个别名，当我们需要使用到这个插件的时候，直接使用这个别名来调用，前提是我们已经把系统中的插件都已经加载了。<br>这时候，我们需要改写观察者的接口，新增注册事件接口，</p>
+<pre><code class="bash">&lt;?php
+/**
+ * Created by PhpStorm.
+ * User: seven
+ * Date: 2018/1/5
+ * Time: 22:45
+ */
+//主题
+class Subject
+{
+    //保存观察者注册的实例
+    private static <span class="variable">$_listen</span> = array();
+
+
+    //加载插件
+    public <span class="keyword">function</span> __construct(<span class="variable">$plugins</span>)
+    {
+        foreach(<span class="variable">$plugins</span> as <span class="variable">$key</span> =&gt; <span class="variable">$val</span>)
+        {
+            <span class="variable">$val</span>-&gt;reg();
+        }
+    }
+
+    //注册观察者
+    /**
+     * @brief 注册事件
+     * @param string <span class="variable">$event</span> 事件
+     * @param object ro <span class="keyword">function</span> <span class="variable">$classObj</span> 类实例 或者 匿名函数
+     * @param string <span class="variable">$method</span> 方法名字
+     */
+    public static <span class="keyword">function</span> reg(<span class="variable">$param</span>,<span class="variable">$classObj</span>,<span class="variable">$method</span> = <span class="string">""</span>)
+    {
+        <span class="variable">$eventArray</span> = explode(<span class="string">','</span>,<span class="variable">$param</span>);
+        foreach(<span class="variable">$eventArray</span> as <span class="variable">$event</span>)
+        {
+            <span class="keyword">if</span>(!isset(self::<span class="variable">$_listen</span>[<span class="variable">$event</span>]))
+            {
+                self::<span class="variable">$_listen</span>[<span class="variable">$event</span>] = array();
+            }
+            self::<span class="variable">$_listen</span>[<span class="variable">$event</span>][] = array(<span class="variable">$classObj</span>,<span class="variable">$method</span>);
+        }
+    }
+    /**
+     * @brief 触发事件支持多个参数
+     * @param string <span class="variable">$event</span> 事件
+     * @notice 可以调用匿名函数和方法
+     */
+    public static <span class="keyword">function</span> trigger(<span class="variable">$event</span>)
+    {
+        <span class="variable">$params</span> = func_get_args();
+        array_shift(<span class="variable">$params</span>);
+        <span class="variable">$result</span> = array();
+        <span class="keyword">if</span>(isset(self::<span class="variable">$_listen</span>[<span class="variable">$event</span>]))
+        {
+            foreach(self::<span class="variable">$_listen</span>[<span class="variable">$event</span>] as <span class="variable">$key</span> =&gt; <span class="variable">$val</span>)
+            {
+                <span class="keyword">if</span>(stripos(<span class="variable">$event</span>,<span class="string">"on"</span>) === 0)
+                {
+                    <span class="built_in">unset</span>(self::<span class="variable">$_listen</span>[<span class="variable">$event</span>][<span class="variable">$key</span>]);
+                }
+                list(<span class="variable">$pluginObj</span>,<span class="variable">$pluginMethod</span>) = <span class="variable">$val</span>;
+                <span class="variable">$result</span>[<span class="variable">$key</span>] = is_callable(<span class="variable">$pluginObj</span>) ? call_user_func_array(<span class="variable">$pluginObj</span>,<span class="variable">$params</span>):call_user_func_array(array(<span class="variable">$pluginObj</span>,<span class="variable">$pluginMethod</span>),<span class="variable">$params</span>);
+            }
+        }
+        <span class="built_in">return</span> isset(<span class="variable">$result</span>[1]) ? <span class="variable">$result</span> : current(<span class="variable">$result</span>);
+    }
+}
+
+//观察实现的接口
+interface Observe
+{
+    public <span class="keyword">function</span> reg();
+}
+
+class oberveplugin implements Observe{
+    //注册事件对应的方法
+    public <span class="keyword">function</span> reg()
+    {
+       Subject::reg(<span class="string">'echohelloworld'</span>,<span class="variable">$this</span>,<span class="variable">$this</span>-&gt;hello());
+    }
+
+    public <span class="keyword">function</span> hello()
+    {
+        <span class="built_in">echo</span> <span class="string">"hello world!"</span>;
+    }
+}
+
+
+//测试代码
+<span class="variable">$plugins</span> = [
+    new oberveplugin()
+];
+<span class="variable">$subject</span> = new Subject(<span class="variable">$plugins</span>);
+Subject::trigger(<span class="string">'echohelloworld'</span>);
+</code></pre>
+<p>上面的代码跟观察者模式的示例代码还是有许多不一样的地方，</p>
+<ul>
+<li>在观察者中实现了事件方法绑定</li>
+<li>把注册观察接口改造成了事件和观察者绑定注册</li>
+<li>同时编写了一个简易的加载插件的构造函数，并将观察者也就是插件中的事件注册进来，把事件跟函数放进内存中</li>
+</ul>
+<p>上述构成了一个简单的插件机制，当我们需要使用插件的时候，直接调用事件名字，就可以使用我们插件中的方法了，例如：Subject::trigger(‘echohelloworld’);<br>在这个基础上，我们就可以添加复杂的功能，比如添加一个插件目录，专门存放插件，以及插件的各种信息。经过以上的分析，是不是对插件的原理有更好的理解了，欢迎一起讨论。</p>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/2018/01/20/web安全第一阶段能力验证题目Writeup/">web安全第一阶段能力验证题目Writeup</a><a class="next" href="/2017/12/20/docker-compose入门，启动多个web容器/">docker+compose入门，启动多个web容器</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://blog.xhzyxed.cn"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Nginx/">Nginx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis/">Redis</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/http/">http</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/javascript/">javascript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/memcached/">memcached</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/mysql/">mysql</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/php/">php</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/vuejs/">vuejs</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/web安全/">web安全</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/前端构建工具/">前端构建工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/推文/">推文</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/项目/">项目</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之进程管理/">Linux学习之进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/13/Linux学习之服务与进程管理/">Linux学习之服务与进程管理</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之crontab定时任务/">Linux学习之crontab定时任务</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/11/Linux学习之文本编辑器/">Linux学习之文本编辑器</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/10/Nginx优化篇/">Nginx优化篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/php底层原理学习/">php底层原理学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Linux学习之bash-shell/">Linux学习之bash_shell</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/09/Nginx应用篇/">Nginx应用篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/08/Nginx基础篇/">Nginx基础篇</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/07/memcached学习笔记/">memcached学习笔记</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://org.xhzyxed.cn/" title="小猴子与小耳朵" target="_blank">小猴子与小耳朵</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">其斤.匕禾页.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
